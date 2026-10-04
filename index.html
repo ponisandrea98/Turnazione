@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#2563eb">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="I miei turni">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <title>I miei turni</title>
+  <style>
+    :root {
+      --bg:#f4f6fa; --card:#fff; --text:#172033; --muted:#697386; --line:#e4e8ef;
+      --blue:#2563eb; --purple:#7c3aed; --paid:#5b21b6; --red:#dc2626;
+      --green:#16a34a; --orange:#ea580c; --gray:#6b7280; --dark:#111827;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    header{position:sticky;top:0;z-index:5;background:rgba(255,255,255,.95);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:14px 16px calc(12px + env(safe-area-inset-top))}
+    .top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    h1{font-size:21px;margin:0}.subtitle{font-size:12px;color:var(--muted);margin-top:3px}
+    button,select,input,textarea{font:inherit}
+    button{border:0;border-radius:12px;padding:10px 13px;background:#eef2f7;color:var(--text);font-weight:600}
+    button.primary{background:var(--blue);color:#fff}
+    .nav{display:flex;align-items:center;justify-content:space-between;margin-top:13px}
+    .month{font-size:18px;font-weight:800;text-transform:capitalize}
+    .nav button{width:42px;height:40px;padding:0;font-size:20px}
+    main{max-width:720px;margin:auto;padding:14px 14px 90px}
+    .week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:6px}
+    .week div{text-align:center;font-size:11px;color:var(--muted);font-weight:700}
+    .calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+    .day{min-height:78px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px;cursor:pointer;position:relative;overflow:hidden}
+    .day.empty{background:transparent;border:0;cursor:default}
+    .num{font-weight:800;font-size:13px}.today .num{background:var(--blue);color:#fff;border-radius:50%;display:inline-flex;width:24px;height:24px;align-items:center;justify-content:center}
+    .state{margin-top:6px;border-radius:8px;padding:5px 4px;color:#fff;font-size:10px;line-height:1.15;font-weight:800;text-align:center}
+    .shift{background:var(--blue)} .change{background:var(--purple)} .paid{background:var(--paid)}
+    .red{background:var(--red)} .green{background:var(--green)} .orange{background:var(--orange)}
+    .gray{background:var(--gray)} .dark{background:var(--dark)}
+    .note{font-size:9px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px}
+    .panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px;margin-top:14px}
+    .panel h2{font-size:15px;margin:0 0 12px}
+    .summary{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+    .stat{border:1px solid var(--line);border-radius:12px;padding:10px}
+    .stat b{font-size:20px;display:block}.stat span{font-size:11px;color:var(--muted)}
+    .legend{display:flex;flex-wrap:wrap;gap:7px}.legend span{font-size:11px;display:flex;align-items:center;gap:4px}.dot{width:10px;height:10px;border-radius:50%}
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;z-index:20}
+    .modal.open{display:flex}
+    .sheet{background:#fff;width:100%;max-height:92vh;overflow:auto;border-radius:22px 22px 0 0;padding:18px 16px calc(22px + env(safe-area-inset-bottom))}
+    .sheet h2{margin:0 0 3px;font-size:19px}.date-label{color:var(--muted);font-size:13px;margin-bottom:16px}
+    label{display:block;font-size:12px;font-weight:800;margin:13px 0 6px}
+    select,input,textarea{width:100%;border:1px solid #d9dee8;border-radius:11px;padding:11px;background:#fff;color:var(--text)}
+    textarea{min-height:82px;resize:vertical}
+    .actions{display:flex;gap:8px;margin-top:16px}.actions button{flex:1}
+    .danger{color:#b91c1c;background:#fee2e2}
+    .hidden{display:none!important}
+    .footer-note{text-align:center;color:var(--muted);font-size:11px;margin-top:15px}
+    @media(min-width:600px){.summary{grid-template-columns:repeat(4,1fr)}.day{min-height:92px}}
+  </style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <div><h1>📅 I miei turni</h1><div class="subtitle">Calendario personale • salvataggio sul dispositivo</div></div>
+    <button id="todayBtn">Oggi</button>
+  </div>
+  <div class="nav">
+    <button id="prev">‹</button><div class="month" id="monthTitle"></div><button id="next">›</button>
+  </div>
+</header>
+
+<main>
+  <div class="week"><div>LUN</div><div>MAR</div><div>MER</div><div>GIO</div><div>VEN</div><div>SAB</div><div>DOM</div></div>
+  <div class="calendar" id="calendar"></div>
+
+  <section class="panel">
+    <h2>Riepilogo del mese</h2>
+    <div class="summary" id="summary"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Legenda</h2>
+    <div class="legend">
+      <span><i class="dot shift"></i>Turno</span>
+      <span><i class="dot change"></i>Cambio turno</span>
+      <span><i class="dot paid"></i>Cambio pagato</span>
+      <span><i class="dot red"></i>Ferie / Malattia</span>
+      <span><i class="dot green"></i>Permesso</span>
+      <span><i class="dot orange"></i>Straordinario</span>
+      <span><i class="dot gray"></i>Riposo</span>
+      <span><i class="dot dark"></i>Altro</span>
+    </div>
+  </section>
+  <div class="footer-note">I dati vengono salvati localmente nel browser del dispositivo.</div>
+</main>
+
+<div class="modal" id="modal">
+  <div class="sheet">
+    <h2>Modifica giornata</h2>
+    <div class="date-label" id="selectedDate"></div>
+    <label for="type">Tipo giornata</label>
+    <select id="type">
+      <option value="turno">Turno</option>
+      <option value="cambio">Cambio turno</option>
+      <option value="pagato">Cambio turno pagato</option>
+      <option value="ferie">Ferie</option>
+      <option value="malattia">Malattia</option>
+      <option value="permesso">Permesso</option>
+      <option value="straordinario">Straordinario</option>
+      <option value="riposo">Riposo</option>
+      <option value="altro">Altro</option>
+    </select>
+
+    <div id="scheduleBox">
+      <label for="schedule">Orario</label>
+      <select id="schedule">
+        <option>01–07</option><option>07–13</option><option>13–19</option><option>19–01</option>
+      </select>
+    </div>
+
+    <label for="note">Nota (facoltativa)</label>
+    <textarea id="note" placeholder="Es. cambio turno richiesto, ferie, nota personale..."></textarea>
+
+    <div class="actions">
+      <button class="danger" id="deleteBtn">Cancella</button>
+      <button id="cancelBtn">Annulla</button>
+      <button class="primary" id="saveBtn">Salva</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const KEY="miei-turni-v1";
+let data=JSON.parse(localStorage.getItem(KEY)||"{}");
+let view=new Date(); view.setDate(1);
+let selectedKey=null;
+
+const labels={turno:"Turno",cambio:"Cambio turno",pagato:"Cambio pagato",ferie:"FERIE",malattia:"MALATTIA",permesso:"Permesso",straordinario:"Straordinario",riposo:"Riposo",altro:"Altro"};
+const classes={turno:"shift",cambio:"change",pagato:"paid",ferie:"red",malattia:"red",permesso:"green",straordinario:"orange",riposo:"gray",altro:"dark"};
+const scheduleTypes=new Set(["turno","cambio","pagato","straordinario"]);
+
+function key(y,m,d){return `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`}
+function save(){localStorage.setItem(KEY,JSON.stringify(data))}
+function fmtDate(k){const [y,m,d]=k.split("-");return new Date(+y,+m-1,+d).toLocaleDateString("it-IT",{weekday:"long",day:"numeric",month:"long",year:"numeric"})}
+function render(){
+  const y=view.getFullYear(), m=view.getMonth();
+  document.getElementById("monthTitle").textContent=view.toLocaleDateString("it-IT",{month:"long",year:"numeric"});
+  const cal=document.getElementById("calendar"); cal.innerHTML="";
+  let first=(new Date(y,m,1).getDay()+6)%7, days=new Date(y,m+1,0).getDate();
+  for(let i=0;i<first;i++){const e=document.createElement("div");e.className="day empty";cal.appendChild(e)}
+  const today=new Date();
+  for(let d=1;d<=days;d++){
+    const k=key(y,m,d), item=data[k], el=document.createElement("div");
+    el.className="day"+(y===today.getFullYear()&&m===today.getMonth()&&d===today.getDate()?" today":"");
+    el.innerHTML=`<div class="num">${d}</div>`;
+    if(item){
+      const st=document.createElement("div"); st.className="state "+classes[item.type];
+      st.textContent=scheduleTypes.has(item.type)?`${labels[item.type]} • ${item.schedule}`:labels[item.type];
+      el.appendChild(st);
+      if(item.note){const n=document.createElement("div");n.className="note";n.textContent=item.note;el.appendChild(n)}
+    }
+    el.onclick=()=>openEditor(k); cal.appendChild(el);
+  }
+  renderSummary(y,m);
+}
+function renderSummary(y,m){
+  const counts={turno:0,cambio:0,pagato:0,ferie:0,malattia:0,permesso:0,straordinario:0,riposo:0};
+  Object.entries(data).forEach(([k,v])=>{if(k.startsWith(`${y}-${String(m+1).padStart(2,"0")}-`)&&counts[v.type]!==undefined)counts[v.type]++});
+  const items=[["Turni",counts.turno],["Cambi turno",counts.cambio],["Cambi pagati",counts.pagato],["Ferie",counts.ferie],["Malattia",counts.malattia],["Permessi",counts.permesso],["Straordinari",counts.straordinario],["Riposi",counts.riposo]];
+  document.getElementById("summary").innerHTML=items.map(x=>`<div class="stat"><b>${x[1]}</b><span>${x[0]}</span></div>`).join("");
+}
+function openEditor(k){
+  selectedKey=k; const item=data[k]||{type:"turno",schedule:"07–13",note:""};
+  document.getElementById("selectedDate").textContent=fmtDate(k);
+  document.getElementById("type").value=item.type;
+  document.getElementById("schedule").value=item.schedule||"07–13";
+  document.getElementById("note").value=item.note||"";
+  updateScheduleVisibility();
+  document.getElementById("modal").classList.add("open");
+}
+function updateScheduleVisibility(){
+  document.getElementById("scheduleBox").classList.toggle("hidden",!scheduleTypes.has(document.getElementById("type").value));
+}
+document.getElementById("type").onchange=updateScheduleVisibility;
+document.getElementById("cancelBtn").onclick=()=>document.getElementById("modal").classList.remove("open");
+document.getElementById("saveBtn").onclick=()=>{
+  const type=document.getElementById("type").value;
+  data[selectedKey]={type,note:document.getElementById("note").value.trim()};
+  if(scheduleTypes.has(type))data[selectedKey].schedule=document.getElementById("schedule").value;
+  else delete data[selectedKey].schedule;
+  save(); document.getElementById("modal").classList.remove("open"); render();
+};
+document.getElementById("deleteBtn").onclick=()=>{
+  delete data[selectedKey];save();document.getElementById("modal").classList.remove("open");render();
+};
+document.getElementById("prev").onclick=()=>{view.setMonth(view.getMonth()-1);render()};
+document.getElementById("next").onclick=()=>{view.setMonth(view.getMonth()+1);render()};
+document.getElementById("todayBtn").onclick=()=>{view=new Date();view.setDate(1);render()};
+document.getElementById("modal").onclick=e=>{if(e.target.id==="modal")document.getElementById("modal").classList.remove("open")};
+if("serviceWorker" in navigator) window.addEventListener("load",()=>navigator.serviceWorker.register("service-worker.js"));
+render();
+</script>
+</body>
+</html>
