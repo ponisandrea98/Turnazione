@@ -1,0 +1,9 @@
+{
+  "name":"I miei turni",
+  "short_name":"I miei turni",
+  "start_url":"./",
+  "display":"standalone",
+  "background_color":"#f5f6fa",
+  "theme_color":"#11141a",
+  "lang":"it"
+}

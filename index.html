@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#11141a">
+<link rel="manifest" href="./manifest.json">
+<title>I miei turni — Demo</title>
+<style>
+:root{--bg:#f5f6fa;--card:#fff;--text:#15171b;--muted:#70747d;--line:#e5e7ec;--blue:#2584ff;--purple:#9a5de8;--paid:#54249b;--red:#e5484d;--green:#22a06b;--orange:#e38a1d;--gray:#8b9099;--dark:#30343b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",Inter,Arial,sans-serif}
+.app{max-width:680px;margin:auto;padding:env(safe-area-inset-top) 16px calc(28px + env(safe-area-inset-bottom))}
+.top{position:sticky;top:0;z-index:5;background:rgba(245,246,250,.94);backdrop-filter:blur(18px);padding:14px 0 12px}
+.toprow{display:flex;align-items:center;justify-content:space-between}.title{font-size:28px;font-weight:800;letter-spacing:-.7px}.sub{color:var(--muted);font-size:13px;margin-top:2px}
+.monthbar{margin-top:14px;background:#11141a;color:#fff;border-radius:18px;padding:16px 18px;box-shadow:0 8px 25px #00000012}.monthbar b{font-size:23px}.monthbar small{display:block;color:#c9cbd0;margin-top:5px}
+.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:12px}.stat{background:#fff;border:1px solid var(--line);border-radius:13px;padding:10px 8px}.stat b{display:block;font-size:18px}.stat span{font-size:10px;color:var(--muted)}
+.day{margin-top:20px}.dayhead{display:flex;align-items:end;justify-content:space-between;margin:0 3px 8px}.date{font-size:20px;font-weight:800;letter-spacing:-.3px}.weekday{text-transform:uppercase;color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.7px}.count{font-size:11px;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:9px;box-shadow:0 3px 12px #00000006}.time{font-size:22px;font-weight:800;letter-spacing:-.5px}.badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.badge{font-size:12px;font-weight:700;border-radius:999px;padding:6px 9px;background:#eee;color:#333}.normal{color:#1767c7;background:#e7f1ff}.change{color:#7440a9;background:#f0e5fb}.paid{color:#fff;background:var(--paid)}.holiday,.sick{color:#b52e33;background:#fde7e8}.permit{color:#08784e;background:#ddf6eb}.overtime{color:#995a00;background:#fff0d8}.rest{color:#626873;background:#eceef1}.other{color:#fff;background:#30343b}.double{color:#fff;background:#7a4bc1}.note{margin-top:9px;color:#626771;font-size:13px;line-height:1.35}
+button{font:inherit}.add{border:0;background:#11141a;color:#fff;border-radius:14px;padding:11px 14px;font-weight:700}.fab{position:fixed;right:20px;bottom:calc(20px + env(safe-area-inset-bottom));width:56px;height:56px;border-radius:50%;border:0;background:#11141a;color:#fff;font-size:28px;box-shadow:0 8px 24px #0004}.modal{position:fixed;inset:0;background:#0007;display:none;align-items:flex-end;z-index:20}.sheet{background:#fff;border-radius:25px 25px 0 0;width:100%;max-width:680px;margin:auto;padding:18px 18px calc(22px + env(safe-area-inset-bottom));max-height:90vh;overflow:auto}.handle{width:42px;height:5px;background:#d8d9de;border-radius:5px;margin:0 auto 14px}.sheet h2{margin:0 0 12px}.entry{border:1px solid var(--line);border-radius:16px;padding:12px;margin:10px 0}.row{display:grid;grid-template-columns:1fr 1fr;gap:9px}label{font-size:11px;color:var(--muted);font-weight:700;display:block;margin:8px 0 5px}select,input{width:100%;padding:11px;border:1px solid #dfe1e6;border-radius:11px;background:#fafbfc;font:inherit}.checks{display:flex;flex-wrap:wrap;gap:7px}.check{border:1px solid #dfe1e6;border-radius:999px;padding:8px 10px;font-size:12px}.check input{width:auto;margin-right:4px}.actions{display:flex;gap:8px;margin-top:14px}.actions button{flex:1;padding:13px;border:0;border-radius:13px;font-weight:800}.cancel{background:#eef0f3}.save{background:#11141a;color:#fff}
+@media(max-width:430px){.summary{grid-template-columns:repeat(2,1fr)}.title{font-size:25px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top">
+ <div class="toprow"><div><div class="title">I miei turni</div><div class="sub">Demo · Agenda</div></div><button class="add" onclick="openEditor()">+ Giorno</button></div>
+ <div class="monthbar"><b id="monthTitle">Ottobre 2026</b><small id="monthSub">Riepilogo del mese</small></div>
+ <div class="summary" id="summary"></div>
+</header>
+<main id="agenda"></main>
+</div>
+<button class="fab" onclick="openEditor()">+</button>
+<div class="modal" id="modal" onclick="if(event.target===this)closeEditor()"><div class="sheet">
+ <div class="handle"></div><h2>Aggiungi giornata</h2>
+ <label>Data</label><input type="date" id="date">
+ <div id="entries"></div>
+ <button class="add" style="width:100%;margin-top:8px" onclick="addEntry()">+ Aggiungi turno</button>
+ <div class="actions"><button class="cancel" onclick="closeEditor()">Annulla</button><button class="save" onclick="saveDay()">Salva</button></div>
+</div></div>
+<script>
+const labels={change:"Cambio turno",paid:"Cambio turno pagato",holiday:"Ferie",sick:"Malattia",permit:"Permesso",overtime:"Straordinario",rest:"Riposo",other:"Altro",double:"Doppio turno"};
+const cls={change:"change",paid:"paid",holiday:"holiday",sick:"sick",permit:"permit",overtime:"overtime",rest:"rest",other:"other",double:"double"};
+let data={
+"2026-10-01":[{shift:"07–13",tags:[],note:""},{shift:"19–01",tags:["change"],note:"Cambio concordato"}],
+"2026-10-02":[{shift:"07–13",tags:["paid"],note:"Cambio turno pagato"}],
+"2026-10-03":[{shift:"19–01",tags:["overtime"],overtimeDur:"2 ore",overtimeHours:"2 ore",note:"2 ore aggiuntive"}],
+"2026-10-04":[{shift:"07–13",tags:["holiday"],note:"Ferie solo sul turno del mattino"},{shift:"19–01",tags:[],note:""}],
+"2026-10-05":[{shift:"07–13",tags:["permit"],permit:"2 ore",note:"Permesso breve"}],
+"2026-10-06":[{shift:"07–13",tags:["double","paid"],note:"Doppio turno + cambio pagato"},{shift:"13–19",tags:["double"],note:"Doppio turno"}],
+"2026-10-07":[{shift:"13–19",tags:["double"],note:""},{shift:"19–01",tags:["double","paid"],note:"Doppio turno + cambio pagato"}],
+"2026-10-08":[{shift:"07–13",tags:["paid"],note:"Primo cambio pagato"},{shift:"19–01",tags:["paid"],note:"Secondo cambio pagato"}],
+"2026-10-09":[{shift:"07–13",tags:["sick"],note:"Malattia"}],
+"2026-10-10":[{shift:"07–13",tags:["rest"],note:"Riposo"}]
+};
+const italian=["Domenica","Lunedì","Martedì","Mercoledì","Giovedì","Venerdì","Sabato"],months=["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
+function saveLocal(){localStorage.setItem("mieiTurniDemo",JSON.stringify(data))}
+function load(){try{const x=JSON.parse(localStorage.getItem("mieiTurniDemo"));if(x)data=x}catch(e){}}
+function tagHTML(t){return `<span class="badge ${cls[t]||''}">${labels[t]||t}</span>`}
+function render(){
+ const keys=Object.keys(data).sort(), counts={change:0,paid:0,holiday:0,sick:0,permit:0,overtime:0,rest:0,double:0};
+ keys.forEach(k=>data[k].forEach(e=>e.tags.forEach(t=>{if(counts[t]!=null)counts[t]++})));
+ const turni=keys.reduce((s,k)=>s+data[k].length,0);
+ summary.innerHTML=[[""+turni,"Turni"],[counts.change,"Cambi"],[counts.paid,"Cambi pagati"],[counts.holiday,"Ferie"],[counts.permit,"Permessi"],[counts.overtime,"Straordinari"],[counts.rest,"Riposi"],[counts.double,"Doppi turni"]].map(x=>`<div class="stat"><b>${x[0]}</b><span>${x[1]}</span></div>`).join("");
+ agenda.innerHTML=keys.map(k=>{
+  const d=new Date(k+"T12:00:00"),es=data[k];
+  return `<section class="day"><div class="dayhead"><div><div class="weekday">${italian[d.getDay()]}</div><div class="date">${d.getDate()} ${months[d.getMonth()].toUpperCase()}</div></div><div class="count">${es.length} ${es.length===1?"turno":"turni"}</div></div>
+  ${es.map(e=>`<div class="card"><div class="time">${e.shift||"—"}</div>${(e.tags.length||e.permit||e.overtimeHours)?`<div class="badges">${e.tags.map(tagHTML).join("")}${e.permit?`<span class="badge permit">${e.permit}</span>`:""}${e.overtimeHours?`<span class="badge overtime">Straordinario ${e.overtimeHours}</span>`:""}</div>`:""}${e.note?`<div class="note">${e.note}</div>`:""}</div>`).join("")}</section>`
+ }).join("");
+}
+function openEditor(){modal.style.display="flex";date.value=new Date().toISOString().slice(0,10);entries.innerHTML="";(data[date.value]||[{shift:"07–13",tags:[],permit:"",note:""}]).forEach(addEntry)}
+function closeEditor(){modal.style.display="none"}
+function addEntry(e={shift:"07–13",tags:[],permit:"",note:""}){const d=document.createElement("div");d.className="entry";d.innerHTML=`<div class="row"><div><label>Orario</label><select class="shift">${["01–07","07–13","13–19","19–01"].map(x=>`<option ${x===e.shift?"selected":""}>${x}</option>`).join("")}</select></div><div><label>Permesso</label><select class="permitDur"><option value="">Nessuno</option><option>1 ora</option><option>2 ore</option><option>3 ore</option><option>4 ore</option><option>Tutto il turno</option></select></div></div>
+<div class="row"><div><label>Straordinario</label><select class="overtimeDur"><option value="">Nessuno</option><option>1 ora</option><option>2 ore</option><option>3 ore</option><option>4 ore</option><option>5 ore</option><option>6 ore</option><option>Personalizzato</option></select></div><div><label>Ore personalizzate</label><input class="overtimeCustom" inputmode="decimal" placeholder="es. 1,5" value="${e.overtimeCustom||""}"></div></div><label>Caratteristiche combinabili</label><div class="checks">${Object.keys(labels).map(t=>`<label class="check"><input type="checkbox" value="${t}" ${e.tags.includes(t)?"checked":""}>${labels[t]}</label>`).join("")}</div><label>Nota</label><input class="noteInput" value="${(e.note||"").replaceAll('"',"&quot;")}" placeholder="Es. cambio pagato, 2 ore permesso…"><button onclick="this.parentElement.remove()" style="margin-top:9px;border:0;background:#fde7e8;color:#a92e34;border-radius:10px;padding:8px 10px">Rimuovi turno</button>`;d.querySelector(".permitDur").value=e.permit||"";
+d.querySelector(".overtimeDur").value=e.overtimeDur||"";
+d.querySelector(".overtimeCustom").value=e.overtimeCustom||"";
+entries.appendChild(d)}
+function saveDay(){const arr=[...entries.children].map(x=>({shift:x.querySelector(".shift").value,tags:[...x.querySelectorAll('input[type=checkbox]:checked')].map(c=>c.value),permit:x.querySelector(".permitDur").value,
+overtimeDur:x.querySelector(".overtimeDur").value,
+overtimeCustom:x.querySelector(".overtimeCustom").value.trim(),
+overtimeHours:(x.querySelector(".overtimeDur").value==="Personalizzato" ? (x.querySelector(".overtimeCustom").value.trim() ? x.querySelector(".overtimeCustom").value.trim()+"h" : "") : x.querySelector(".overtimeDur").value),
+note:x.querySelector(".noteInput").value.trim()}));if(arr.length)data[date.value]=arr;else delete data[date.value];saveLocal();closeEditor();render()}
+load();render();
+if("serviceWorker"in navigator)navigator.serviceWorker.register("./service-worker.js");
+</script>
+</body></html>
