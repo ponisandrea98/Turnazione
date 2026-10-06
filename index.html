@@ -103,18 +103,362 @@
 </head>
 <body>
 
-  <div id="toast" class="toast">Sincronizzato Cloud ✓</div>
+  <div id="toast" class="toast">Sincronizzato ✓</div>
 
   <header>
     <div class="header-top">
       <h1>I MIEI TURNI 4.0</h1>
     </div>
     <div class="header-actions">
-      <button class="btn-header btn-save-all" onclick="manualSync()">🔄 AGGIORNA CLOUD</button>
+      <button class="btn-header btn-save-all" onclick="syncWithCloud()">🔄 AGGIORNA CLOUD</button>
       <button class="btn-header" onclick="openModal()">+ AGGIUNGI GIORNO</button>
     </div>
   </header>
 
   <div id="agenda" class="agenda-container"></div>
 
-  <!-- Modal Aggiungi
+  <!-- Modal Aggiungi Giorno -->
+  <div id="modalAdd" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Aggiungi / Modifica Turno</h2>
+        <button class="btn-close" onclick="closeModal()">CHIUDI / FINE</button>
+      </div>
+
+      <div class="form-group">
+        <label>Data</label>
+        <input type="date" id="inputDate" class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label>Turno</label>
+        <select id="selectShift" class="form-control">
+          <option value="01–07">01–07</option>
+          <option value="07–13">07–13</option>
+          <option value="13–19">13–19</option>
+          <option value="19–01">19–01</option>
+          <option value="Riposo">Riposo</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Dettaglio Permesso</label>
+        <select id="selectPermesso" class="form-control">
+          <option value="">Nessuno</option>
+          <option value="1h">1 ora</option>
+          <option value="2h">2 ore</option>
+          <option value="3h">3 ore</option>
+          <option value="4h">4 ore</option>
+          <option value="Tutto il turno">Tutto il turno</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Dettaglio Straordinario</label>
+        <select id="selectStraordinario" class="form-control">
+          <option value="">Nessuno</option>
+          <option value="1h">1 ora</option>
+          <option value="2h">2 ore</option>
+          <option value="3h">3 ore</option>
+          <option value="4h">4 ore</option>
+          <option value="5h">5 ore</option>
+          <option value="6h">6 ore</option>
+          <option value="Tutto il turno">Tutto il turno</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Caratteristiche Aggiuntive</label>
+        <div class="checkbox-grid">
+          <label class="checkbox-btn"><input type="checkbox" id="chkCambio"> Cambio turno</label>
+          <label class="checkbox-btn"><input type="checkbox" id="chkCambioPagato"> Cambio pagato</label>
+          <label class="checkbox-btn"><input type="checkbox" id="chkFerie"> Ferie</label>
+          <label class="checkbox-btn"><input type="checkbox" id="chkMalattia"> Malattia</label>
+          <label class="checkbox-btn"><input type="checkbox" id="chkDoppio"> Doppio turno</label>
+          <label class="checkbox-btn"><input type="checkbox" id="chkCigo"> CIGO</label>
+          <label class="checkbox-btn"><input type="checkbox" id="chkChiusura"> Chiusura terminal</label>
+          <label class="checkbox-btn"><input type="checkbox" id="chkAltro"> Altro</label>
+        </div>
+      </div>
+
+      <button class="btn-submit" onclick="saveShiftContinuous()">SALVA E CONTINUA</button>
+    </div>
+  </div>
+
+  <div class="summary-bar" onclick="openSummary()">
+    <div class="summary-bar-text" id="summaryBarTitle">RESOCONTO · OTTOBRE 2026 ›</div>
+  </div>
+
+  <div id="summaryPage" class="summary-page">
+    <div class="summary-nav">
+      <button onclick="changeSummaryMonth(-1)">‹</button>
+      <div class="summary-title" id="summaryMonthLabel">OTTOBRE 2026</div>
+      <button onclick="changeSummaryMonth(1)">›</button>
+    </div>
+    <div class="summary-grid" id="summaryGrid"></div>
+    <button class="btn-back-agenda" onclick="closeSummary()">TORNA ALL'AGENDA</button>
+  </div>
+
+  <script>
+    // Incolla qui le tue chiavi di JSONBin
+    const BIN_ID = '6ac51e21ac6210605a19b157';
+    const MASTER_KEY = '$2a$10$mdcCYDxaDgUqQi5RhuFhXeoE4LgdhCH5etDoVuJUR7F5033qNa88K';
+
+    const STORAGE_KEY = 'miei_turni_v4_data';
+    let shiftsData = [];
+    let currentSummaryDate = new Date();
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      document.getElementById('inputDate').valueAsDate = new Date();
+      await fetchFromCloud();
+      renderAgenda();
+      updateSummaryBar();
+      setupSwipeGesture();
+    });
+
+    async function fetchFromCloud() {
+      if (!BIN_ID || BIN_ID.includes('INSERISCI')) {
+        const local = localStorage.getItem(STORAGE_KEY);
+        if (local) shiftsData = JSON.parse(local);
+        return;
+      }
+      try {
+        const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+          headers: { 'X-Master-Key': MASTER_KEY }
+        });
+        if (res.ok) {
+          const json = await res.json();
+          shiftsData = Array.isArray(json.record) ? json.record : [];
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(shiftsData));
+        }
+      } catch (e) {
+        console.error('Errore Cloud:', e);
+        const local = localStorage.getItem(STORAGE_KEY);
+        if (local) shiftsData = JSON.parse(local);
+      }
+    }
+
+    async function syncWithCloud() {
+      if (!BIN_ID || BIN_ID.includes('INSERISCI')) return alert('Sostituisci BIN_ID e MASTER_KEY nel codice!');
+      showToast('Sincronizzazione...');
+      try {
+        const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Master-Key': MASTER_KEY
+          },
+          body: JSON.stringify(shiftsData)
+        });
+        if (res.ok) {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(shiftsData));
+          showToast('Sincronizzato ✓');
+        } else {
+          alert('Errore sincronizzazione: Controlla le chiavi');
+        }
+      } catch (e) {
+        alert('Errore di connessione');
+      }
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.innerText = msg;
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 2000);
+    }
+
+    function openModal() { document.getElementById('modalAdd').classList.add('active'); }
+    function closeModal() { document.getElementById('modalAdd').classList.remove('active'); }
+
+    async function saveShiftContinuous() {
+      const dateVal = document.getElementById('inputDate').value;
+      if (!dateVal) return alert('Seleziona una data valida');
+
+      const newShift = {
+        id: 'shift_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+        date: dateVal,
+        shift: document.getElementById('selectShift').value,
+        permesso: document.getElementById('selectPermesso').value,
+        straordinario: document.getElementById('selectStraordinario').value,
+        cambio: document.getElementById('chkCambio').checked,
+        cambioPagato: document.getElementById('chkCambioPagato').checked,
+        ferie: document.getElementById('chkFerie').checked,
+        malattia: document.getElementById('chkMalattia').checked,
+        doppio: document.getElementById('chkDoppio').checked,
+        cigo: document.getElementById('chkCigo').checked,
+        chiusura: document.getElementById('chkChiusura').checked,
+        altro: document.getElementById('chkAltro').checked
+      };
+
+      shiftsData.push(newShift);
+      renderAgenda();
+      updateSummaryBar();
+      await syncWithCloud();
+    }
+
+    async function deleteShift(id) {
+      shiftsData = shiftsData.filter(s => s.id !== id);
+      renderAgenda();
+      updateSummaryBar();
+      await syncWithCloud();
+    }
+
+    function renderAgenda() {
+      const container = document.getElementById('agenda');
+      container.innerHTML = '';
+
+      if (shiftsData.length === 0) {
+        container.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text-sub);">Nessun turno inserito. Premi "+ AGGIUNGI GIORNO" per iniziare.</div>';
+        return;
+      }
+
+      const groupedByDate = {};
+      shiftsData.forEach(shift => {
+        if (!groupedByDate[shift.date]) groupedByDate[shift.date] = [];
+        groupedByDate[shift.date].push(shift);
+      });
+
+      const sortedDates = Object.keys(groupedByDate).sort((a, b) => new Date(a) - new Date(b));
+      let currentMonthKey = '';
+
+      sortedDates.forEach(dateStr => {
+        const shiftsForDay = groupedByDate[dateStr];
+        const d = new Date(dateStr + 'T00:00:00');
+        const monthKey = d.toLocaleString('it-IT', { month: 'long', year: 'numeric' }).toUpperCase();
+
+        if (monthKey !== currentMonthKey) {
+          currentMonthKey = monthKey;
+          const monthDiv = document.createElement('div');
+          monthDiv.className = 'month-header';
+          monthDiv.innerText = currentMonthKey;
+          container.appendChild(monthDiv);
+        }
+
+        const dayCard = document.createElement('div');
+        dayCard.className = 'day-card';
+        const formattedDay = d.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' });
+        dayCard.innerHTML = `<div class="day-title">${capitalize(formattedDay)}</div><div class="shifts-list"></div>`;
+
+        const shiftsList = dayCard.querySelector('.shifts-list');
+        shiftsForDay.forEach(shift => {
+          shiftsList.appendChild(createShiftRow(shift));
+        });
+
+        container.appendChild(dayCard);
+      });
+    }
+
+    function createShiftRow(shift) {
+      const row = document.createElement('div');
+      row.className = 'shift-row';
+      const color = getShiftColor(shift);
+
+      let tagsHtml = '';
+      if (shift.cambio) tagsHtml += `<span class="tag tag-cambio">Cambio turno</span>`;
+      if (shift.cambioPagato) tagsHtml += `<span class="tag tag-cambio-pagato">Cambio pagato</span>`;
+      if (shift.ferie) tagsHtml += `<span class="tag tag-ferie">Ferie</span>`;
+      if (shift.malattia) tagsHtml += `<span class="tag tag-malattia">Malattia</span>`;
+      if (shift.permesso) tagsHtml += `<span class="tag tag-permesso">Permesso ${shift.permesso}</span>`;
+      if (shift.straordinario) tagsHtml += `<span class="tag tag-straordinario">Straordinario ${shift.straordinario}</span>`;
+      if (shift.doppio) tagsHtml += `<span class="tag tag-doppio">Doppio turno</span>`;
+      if (shift.cigo) tagsHtml += `<span class="tag tag-cigo">CIGO</span>`;
+      if (shift.chiusura) tagsHtml += `<span class="tag tag-chiusura">Chiusura terminal</span>`;
+      if (shift.altro) tagsHtml += `<span class="tag tag-altro">Altro</span>`;
+
+      row.innerHTML = `
+        <div>
+          <div class="shift-main">
+            <div class="shift-badge-color" style="background:${color}"></div>
+            <div class="shift-time">${shift.shift}</div>
+          </div>
+          <div class="shift-tags">${tagsHtml}</div>
+        </div>
+        <button class="btn-delete-shift" onclick="deleteShift('${shift.id}')">✕</button>
+      `;
+      return row;
+    }
+
+    function getShiftColor(shift) {
+      if (shift.shift === 'Riposo') return 'var(--accent-gray)';
+      if (shift.ferie || shift.malattia) return 'var(--accent-red)';
+      if (shift.cambioPagato) return 'var(--accent-purple-dark)';
+      if (shift.cambio) return 'var(--accent-purple)';
+      if (shift.straordinario) return 'var(--accent-orange)';
+      if (shift.permesso) return 'var(--accent-green)';
+      return 'var(--accent-blue)';
+    }
+
+    function capitalize(str) { return str.charAt(0).toUpperCase() + str.slice(1); }
+
+    function updateSummaryBar() {
+      const monthName = currentSummaryDate.toLocaleString('it-IT', { month: 'long', year: 'numeric' }).toUpperCase();
+      document.getElementById('summaryBarTitle').innerText = `RESOCONTO · ${monthName} ›`;
+    }
+
+    function openSummary() { renderSummaryPage(); document.getElementById('summaryPage').classList.add('active'); }
+    function closeSummary() { document.getElementById('summaryPage').classList.remove('active'); }
+
+    function changeSummaryMonth(delta) {
+      currentSummaryDate.setMonth(currentSummaryDate.getMonth() + delta);
+      updateSummaryBar();
+      renderSummaryPage();
+    }
+
+    function renderSummaryPage() {
+      const year = currentSummaryDate.getFullYear();
+      const month = currentSummaryDate.getMonth();
+
+      const monthName = currentSummaryDate.toLocaleString('it-IT', { month: 'long', year: 'numeric' }).toUpperCase();
+      document.getElementById('summaryMonthLabel').innerText = monthName;
+
+      const monthlyShifts = shiftsData.filter(s => {
+        const d = new Date(s.date + 'T00:00:00');
+        return d.getFullYear() === year && d.getMonth() === month;
+      });
+
+      let turniTotali = 0, riposi = 0, cambi = 0, cambiPagati = 0, ferie = 0, malattia = 0, permessi = 0, straordinari = 0, doppi = 0, cigo = 0, chiusura = 0;
+
+      monthlyShifts.forEach(s => {
+        if (s.shift === 'Riposo') riposi++; else turniTotali++;
+        if (s.cambio) cambi++;
+        if (s.cambioPagato) cambiPagati++;
+        if (s.ferie) ferie++;
+        if (s.malattia) malattia++;
+        if (s.permesso) permessi++;
+        if (s.straordinario) straordinari++;
+        if (s.doppio) doppi++;
+        if (s.cigo) cigo++;
+        if (s.chiusura) chiusura++;
+      });
+
+      const grid = document.getElementById('summaryGrid');
+      grid.innerHTML = `
+        <div class="summary-card"><span style="color:var(--accent-blue)">Turni</span><span class="num">${turniTotali}</span></div>
+        <div class="summary-card"><span style="color:var(--accent-gray)">Riposi</span><span class="num">${riposi}</span></div>
+        <div class="summary-card"><span style="color:var(--accent-purple)">Cambi Turno</span><span class="num">${cambi}</span></div>
+        <div class="summary-card"><span style="color:var(--accent-purple-dark)">Cambi Pagati</span><span class="num">${cambiPagati}</span></div>
+        <div class="summary-card"><span style="color:var(--accent-red)">Ferie</span><span class="num">${ferie}</span></div>
+        <div class="summary-card"><span style="color:var(--accent-red)">Malattia</span><span class="num">${malattia}</span></div>
+        <div class="summary-card"><span style="color:var(--accent-green)">Permessi</span><span class="num">${permessi}</span></div>
+        <div class="summary-card"><span style="color:var(--accent-orange)">Straordinari</span><span class="num">${straordinari}</span></div>
+        <div class="summary-card"><span style="color:var(--accent-purple)">Doppio Turno</span><span class="num">${doppi}</span></div>
+        <div class="summary-card"><span style="color:var(--accent-blue)">CIGO</span><span class="num">${cigo}</span></div>
+        <div class="summary-card"><span style="color:var(--accent-orange)">Chiusura Terminal</span><span class="num">${chiusura}</span></div>
+      `;
+    }
+
+    function setupSwipeGesture() {
+      const summaryPage = document.getElementById('summaryPage');
+      let touchStartX = 0, touchEndX = 0;
+      summaryPage.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, false);
+      summaryPage.addEventListener('touchend', e => { touchEndX = e.changedTouches[0].screenX; handleSwipe(); }, false);
+      function handleSwipe() {
+        const threshold = 50;
+        if (touchEndX < touchStartX - threshold) changeSummaryMonth(1);
+        if (touchEndX > touchStartX + threshold) changeSummaryMonth(-1);
+      }
+    }
+  </script>
+</body>
+</html>
