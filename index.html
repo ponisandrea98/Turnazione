@@ -103,7 +103,7 @@
       margin-top: 20px;
     }
 
-    .agenda-list {
+    .agenda-container {
       padding: 10px 16px;
     }
 
@@ -127,7 +127,7 @@
       align-items: center;
       justify-content: space-between;
       padding: 8px 0;
-      border-bottom: 0.5px solid rgba(255,255,255,0.05);
+      border-bottom: 0.5px solid rgba(255,255,255,0.08);
     }
 
     .shift-row:last-child {
@@ -501,45 +501,37 @@
   </div>
 
   <script>
-    // Storage Key
     const STORAGE_KEY = 'miei_turni_v4_data';
-    const OLD_STORAGE_KEY = 'miei_turni_data'; // Per migrazione v3.0
+    const OLD_STORAGE_KEY = 'miei_turni_data';
 
     let shiftsData = [];
     let currentSummaryDate = new Date();
 
-    // Inizializzazione
     window.addEventListener('DOMContentLoaded', () => {
       loadAndMigrateData();
       renderAgenda();
       updateSummaryBar();
       setupSwipeGesture();
-      
-      // Imposta data odierna nel form
       document.getElementById('inputDate').valueAsDate = new Date();
     });
 
-    // Registrazione Service Worker
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('service-worker.js').then(() => {
         console.log('Service Worker v4.0 Registrato');
       });
     }
 
-    // Caricamento e Migrazione V3.0 -> V4.0
     function loadAndMigrateData() {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         shiftsData = JSON.parse(saved);
       } else {
-        // Tenta la migrazione dalla v3.0
         const oldSaved = localStorage.getItem(OLD_STORAGE_KEY);
         if (oldSaved) {
           try {
             const oldData = JSON.parse(oldSaved);
             shiftsData = migrateV3ToV4(oldData);
             saveData();
-            console.log('Migrazione da v3.0 eseguita con successo');
           } catch(e) {
             console.error('Errore durante la migrazione:', e);
             shiftsData = [];
@@ -549,7 +541,6 @@
     }
 
     function migrateV3ToV4(oldData) {
-      // Converte la vecchia struttura giorno-singolo con checkbox Riposo in un array di turni v4.0
       const newData = [];
       for (const entry of oldData) {
         let shiftType = entry.shift || '07–13';
@@ -591,7 +582,6 @@
       setTimeout(() => { toast.style.display = 'none'; }, 2000);
     }
 
-    // Modal Handlers
     function openModal() {
       document.getElementById('modalAdd').classList.add('active');
     }
@@ -600,7 +590,6 @@
       document.getElementById('modalAdd').classList.remove('active');
     }
 
-    // Salvataggio continuo senza chiusura finestra
     function saveShiftContinuous() {
       const dateVal = document.getElementById('inputDate').value;
       if (!dateVal) return alert('Seleziona una data valida');
@@ -631,10 +620,7 @@
       updateSummaryBar();
       showToast('Turno Aggiunto ✓');
 
-      // Avanza il giorno automaticamente per facilitare l'inserimento rapido
-      const currentDate = new Date(dateVal);
-      currentDate.setDate(currentDate.getDate() + 1);
-      document.getElementById('inputDate').valueAsDate = currentDate;
+      // Lascia la stessa data per inserire facilmente un secondo turno nello stesso giorno
     }
 
     function deleteShift(id) {
@@ -644,7 +630,7 @@
       updateSummaryBar();
     }
 
-    // Generazione della Vista Agenda
+    // Render Agenda con supporto MULTI-TURNO nello stesso giorno
     function renderAgenda() {
       const container = document.getElementById('agenda');
       container.innerHTML = '';
@@ -654,14 +640,23 @@
         return;
       }
 
-      // Ordina per data crescente
-      const sorted = [...shiftsData].sort((a, b) => new Date(a.date) - new Date(b.date));
+      // Raggruppa tutti i turni per Data
+      const groupedByDate = {};
+      shiftsData.forEach(shift => {
+        if (!groupedByDate[shift.date]) {
+          groupedByDate[shift.date] = [];
+        }
+        groupedByDate[shift.date].push(shift);
+      });
 
-      // Raggruppa per Anno-Mese e poi per Data
+      // Ordina le date in modo crescente
+      const sortedDates = Object.keys(groupedByDate).sort((a, b) => new Date(a) - new Date(b));
+
       let currentMonthKey = '';
 
-      sorted.forEach(shift => {
-        const d = new Date(shift.date);
+      sortedDates.forEach(dateStr => {
+        const shiftsForDay = groupedByDate[dateStr];
+        const d = new Date(dateStr + 'T00:00:00');
         const monthKey = d.toLocaleString('it-IT', { month: 'long', year: 'numeric' }).toUpperCase();
 
         if (monthKey !== currentMonthKey) {
@@ -672,19 +667,20 @@
           container.appendChild(monthDiv);
         }
 
-        let dayCard = document.getElementById(`day-${shift.date}`);
-        if (!dayCard) {
-          dayCard = document.createElement('div');
-          dayCard.id = `day-${shift.date}`;
-          dayCard.className = 'day-card';
+        const dayCard = document.createElement('div');
+        dayCard.className = 'day-card';
 
-          const formattedDay = d.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' });
-          dayCard.innerHTML = `<div class="day-title">${capitalize(formattedDay)}</div><div class="shifts-list"></div>`;
-          container.appendChild(dayCard);
-        }
+        const formattedDay = d.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' });
+        dayCard.innerHTML = `<div class="day-title">${capitalize(formattedDay)}</div><div class="shifts-list"></div>`;
 
         const shiftsList = dayCard.querySelector('.shifts-list');
-        shiftsList.appendChild(createShiftRow(shift));
+        
+        // Inserisce tutti i turni presenti in quella data
+        shiftsForDay.forEach(shift => {
+          shiftsList.appendChild(createShiftRow(shift));
+        });
+
+        container.appendChild(dayCard);
       });
     }
 
@@ -734,7 +730,6 @@
       return str.charAt(0).toUpperCase() + str.slice(1);
     }
 
-    // Gestione Resoconto Mensile
     function updateSummaryBar() {
       const monthName = currentSummaryDate.toLocaleString('it-IT', { month: 'long', year: 'numeric' }).toUpperCase();
       document.getElementById('summaryBarTitle').innerText = `RESOCONTO · ${monthName} ›`;
@@ -762,13 +757,11 @@
       const monthName = currentSummaryDate.toLocaleString('it-IT', { month: 'long', year: 'numeric' }).toUpperCase();
       document.getElementById('summaryMonthLabel').innerText = monthName;
 
-      // Filtra esclusivamente i turni del mese visualizzato
       const monthlyShifts = shiftsData.filter(s => {
-        const d = new Date(s.date);
+        const d = new Date(s.date + 'T00:00:00');
         return d.getFullYear() === year && d.getMonth() === month;
       });
 
-      // Calcoli analitici
       let turniTotali = 0;
       let riposi = 0;
       let cambi = 0;
@@ -785,7 +778,7 @@
         if (s.shift === 'Riposo') {
           riposi++;
         } else {
-          turniTotali++; // REGOLA: Riposo NON incrementa il conteggio dei turni
+          turniTotali++;
         }
 
         if (s.cambio) cambi++;
@@ -815,7 +808,6 @@
       `;
     }
 
-    // Swipe Gestures per il resoconto
     function setupSwipeGesture() {
       const summaryPage = document.getElementById('summaryPage');
       let touchStartX = 0;
@@ -833,10 +825,10 @@
       function handleSwipe() {
         const threshold = 50;
         if (touchEndX < touchStartX - threshold) {
-          changeSummaryMonth(1); // Swipe Sinistra -> Mese Successivo
+          changeSummaryMonth(1);
         }
         if (touchEndX > touchStartX + threshold) {
-          changeSummaryMonth(-1); // Swipe Destra -> Mese Precedente
+          changeSummaryMonth(-1);
         }
       }
     }
