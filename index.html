@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>I Miei Turni 4.0</title>
+  <title>I Miei Turni 4.0 Cloud</title>
   
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -29,143 +29,36 @@
       --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-    }
-
-    body {
-      background-color: var(--bg-color);
-      color: var(--text-main);
-      font-family: var(--font-family);
-      padding-bottom: 90px;
-      overflow-x: hidden;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; user-select: none; }
+    body { background-color: var(--bg-color); color: var(--text-main); font-family: var(--font-family); padding-bottom: calc(90px + env(safe-area-inset-bottom)); overflow-x: hidden; }
 
     header {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      padding: 16px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(0, 0, 0, 0.88); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      padding-top: max(12px, env(safe-area-inset-top)); padding-bottom: 12px; padding-left: 16px; padding-right: 16px;
       border-bottom: 0.5px solid var(--card-border);
     }
-
-    header h1 {
-      font-size: 20px;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-    }
-
-    .header-actions {
-      display: flex;
-      gap: 10px;
-    }
-
-    .btn-header {
-      background: var(--accent-blue);
-      color: #fff;
-      border: none;
-      padding: 8px 14px;
-      border-radius: 20px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    .btn-save-all {
-      background: #2c2c2e;
-      color: var(--accent-green);
-      border: 1px solid var(--accent-green);
-    }
+    .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    header h1 { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
+    .header-actions { display: flex; gap: 8px; width: 100%; }
+    .btn-header { flex: 1; background: var(--accent-blue); color: #fff; border: none; padding: 10px 12px; border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; text-align: center; white-space: nowrap; }
+    .btn-save-all { background: #2c2c2e; color: var(--accent-green); border: 1px solid var(--accent-green); }
 
     .month-header {
-      position: sticky;
-      top: 57px;
-      z-index: 90;
-      background: #121214;
-      padding: 12px 20px;
-      font-size: 16px;
-      font-weight: 800;
-      color: var(--accent-blue);
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      border-bottom: 1px solid var(--card-border);
-      border-top: 1px solid var(--card-border);
-      margin-top: 20px;
+      position: sticky; top: calc(85px + env(safe-area-inset-top)); z-index: 90; background: #121214;
+      padding: 10px 16px; font-size: 15px; font-weight: 800; color: var(--accent-blue); letter-spacing: 1px;
+      text-transform: uppercase; border-bottom: 1px solid var(--card-border); border-top: 1px solid var(--card-border); margin-top: 10px;
     }
-
-    .agenda-container {
-      padding: 10px 16px;
-    }
-
-    .day-card {
-      background: var(--card-bg);
-      border-radius: 14px;
-      padding: 14px 16px;
-      margin-bottom: 10px;
-      border: 0.5px solid var(--card-border);
-    }
-
-    .day-title {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--text-sub);
-      margin-bottom: 8px;
-    }
-
-    .shift-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 8px 0;
-      border-bottom: 0.5px solid rgba(255,255,255,0.08);
-    }
-
-    .shift-row:last-child {
-      border-bottom: none;
-    }
-
-    .shift-main {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .shift-badge-color {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-    }
-
-    .shift-time {
-      font-size: 17px;
-      font-weight: 700;
-    }
-
-    .shift-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 4px;
-    }
-
-    .tag {
-      font-size: 11px;
-      font-weight: 600;
-      padding: 3px 8px;
-      border-radius: 6px;
-      color: #fff;
-    }
-
+    .agenda-container { padding: 10px 16px; }
+    .day-card { background: var(--card-bg); border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; border: 0.5px solid var(--card-border); }
+    .day-title { font-size: 15px; font-weight: 600; color: var(--text-sub); margin-bottom: 8px; }
+    .shift-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 0.5px solid rgba(255,255,255,0.08); }
+    .shift-row:last-child { border-bottom: none; }
+    .shift-main { display: flex; align-items: center; gap: 10px; }
+    .shift-badge-color { width: 12px; height: 12px; border-radius: 50%; }
+    .shift-time { font-size: 17px; font-weight: 700; }
+    .shift-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+    .tag { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 6px; color: #fff; }
     .tag-cambio { background: var(--accent-purple); }
     .tag-cambio-pagato { background: var(--accent-purple-dark); }
     .tag-ferie, .tag-malattia { background: var(--accent-red); }
@@ -176,662 +69,52 @@
     .tag-doppio { background: var(--accent-purple); }
     .tag-cigo { background: var(--accent-blue); }
     .tag-chiusura { background: var(--accent-orange); }
+    .btn-delete-shift { background: transparent; border: none; color: var(--accent-red); font-size: 18px; cursor: pointer; padding: 4px; }
 
-    .btn-delete-shift {
-      background: transparent;
-      border: none;
-      color: var(--accent-red);
-      font-size: 18px;
-      cursor: pointer;
-      padding: 4px;
-    }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); z-index: 200; display: none; justify-content: center; align-items: flex-end; }
+    .modal-overlay.active { display: flex; }
+    .modal-content { background: #1c1c1e; width: 100%; max-width: 500px; border-radius: 20px 20px 0 0; padding: 20px; padding-bottom: calc(20px + env(safe-area-inset-bottom)); max-height: 90vh; overflow-y: auto; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .modal-header h2 { font-size: 18px; }
+    .btn-close { background: #2c2c2e; color: var(--accent-blue); border: none; padding: 6px 12px; border-radius: 12px; font-weight: 600; cursor: pointer; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 13px; color: var(--text-sub); margin-bottom: 6px; }
+    .form-control { width: 100%; background: #2c2c2e; border: 1px solid #3a3a3c; color: #fff; padding: 10px; border-radius: 10px; font-size: 16px; }
+    .checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .checkbox-btn { background: #2c2c2e; padding: 10px; border-radius: 10px; display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; }
+    .checkbox-btn input { accent-color: var(--accent-blue); }
+    .btn-submit { width: 100%; background: var(--accent-blue); color: #fff; border: none; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: 700; margin-top: 10px; cursor: pointer; }
 
-    /* Modal Styling */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.7);
-      backdrop-filter: blur(10px);
-      z-index: 200;
-      display: none;
-      justify-content: center;
-      align-items: flex-end;
-    }
+    .summary-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #1c1c1e; border-top: 0.5px solid var(--card-border); padding: 14px 20px; padding-bottom: max(14px, env(safe-area-inset-bottom)); display: flex; justify-content: space-between; align-items: center; cursor: pointer; z-index: 100; }
+    .summary-bar-text { font-weight: 700; font-size: 14px; letter-spacing: 0.5px; }
 
-    .modal-overlay.active {
-      display: flex;
-    }
+    .summary-page { position: fixed; inset: 0; background: #000; z-index: 300; display: none; flex-direction: column; padding: 20px; padding-top: max(20px, env(safe-area-inset-top)); padding-bottom: max(20px, env(safe-area-inset-bottom)); overflow-y: auto; }
+    .summary-page.active { display: flex; }
+    .summary-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; margin-top: 10px; }
+    .summary-nav button { background: #1c1c1e; color: var(--accent-blue); border: none; padding: 8px 16px; border-radius: 10px; font-size: 18px; font-weight: 700; }
+    .summary-title { font-size: 18px; font-weight: 800; }
+    .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .summary-card { background: #1c1c1e; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; align-items: flex-start; border: 0.5px solid var(--card-border); }
+    .summary-card .num { font-size: 32px; font-weight: 800; margin-top: 6px; }
+    .btn-back-agenda { background: #2c2c2e; color: #fff; border: none; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: 700; margin-top: 24px; width: 100%; cursor: pointer; }
 
-    .modal-content {
-      background: #1c1c1e;
-      width: 100%;
-      max-width: 500px;
-      border-radius: 20px 20px 0 0;
-      padding: 20px;
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-
-    .modal-header h2 {
-      font-size: 18px;
-    }
-
-    .btn-close {
-      background: #2c2c2e;
-      color: var(--accent-blue);
-      border: none;
-      padding: 6px 12px;
-      border-radius: 12px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    .form-group {
-      margin-bottom: 14px;
-    }
-
-    .form-group label {
-      display: block;
-      font-size: 13px;
-      color: var(--text-sub);
-      margin-bottom: 6px;
-    }
-
-    .form-control {
-      width: 100%;
-      background: #2c2c2e;
-      border: 1px solid #3a3a3c;
-      color: #fff;
-      padding: 10px;
-      border-radius: 10px;
-      font-size: 16px;
-    }
-
-    .checkbox-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-
-    .checkbox-btn {
-      background: #2c2c2e;
-      padding: 10px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13px;
-      cursor: pointer;
-    }
-
-    .checkbox-btn input {
-      accent-color: var(--accent-blue);
-    }
-
-    .btn-submit {
-      width: 100%;
-      background: var(--accent-blue);
-      color: #fff;
-      border: none;
-      padding: 14px;
-      border-radius: 12px;
-      font-size: 16px;
-      font-weight: 700;
-      margin-top: 10px;
-      cursor: pointer;
-    }
-
-    /* Bar Resoconto Bottom */
-    .summary-bar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: #1c1c1e;
-      border-top: 0.5px solid var(--card-border);
-      padding: 14px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      cursor: pointer;
-      z-index: 100;
-    }
-
-    .summary-bar-text {
-      font-weight: 700;
-      font-size: 14px;
-      letter-spacing: 0.5px;
-    }
-
-    /* Fullscreen Summary Page */
-    .summary-page {
-      position: fixed;
-      inset: 0;
-      background: #000;
-      z-index: 300;
-      display: none;
-      flex-direction: column;
-      padding: 20px;
-      overflow-y: auto;
-    }
-
-    .summary-page.active {
-      display: flex;
-    }
-
-    .summary-nav {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      margin-top: 10px;
-    }
-
-    .summary-nav button {
-      background: #1c1c1e;
-      color: var(--accent-blue);
-      border: none;
-      padding: 8px 16px;
-      border-radius: 10px;
-      font-size: 18px;
-      font-weight: 700;
-    }
-
-    .summary-title {
-      font-size: 18px;
-      font-weight: 800;
-    }
-
-    .summary-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-
-    .summary-card {
-      background: #1c1c1e;
-      border-radius: 14px;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      border: 0.5px solid var(--card-border);
-    }
-
-    .summary-card .num {
-      font-size: 32px;
-      font-weight: 800;
-      margin-top: 6px;
-    }
-
-    .btn-back-agenda {
-      background: #2c2c2e;
-      color: #fff;
-      border: none;
-      padding: 14px;
-      border-radius: 12px;
-      font-size: 16px;
-      font-weight: 700;
-      margin-top: 24px;
-      width: 100%;
-      cursor: pointer;
-    }
-
-    .toast {
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(48, 209, 88, 0.9);
-      color: #000;
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-weight: 700;
-      font-size: 13px;
-      z-index: 400;
-      display: none;
-    }
+    .toast { position: fixed; top: max(20px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); background: rgba(48, 209, 88, 0.95); color: #000; padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 13px; z-index: 400; display: none; }
   </style>
 </head>
 <body>
 
-  <div id="toast" class="toast">Salvato ✓</div>
+  <div id="toast" class="toast">Sincronizzato Cloud ✓</div>
 
   <header>
-    <h1>I MIEI TURNI 4.0</h1>
+    <div class="header-top">
+      <h1>I MIEI TURNI 4.0</h1>
+    </div>
     <div class="header-actions">
-      <button class="btn-header btn-save-all" onclick="saveAllForce()">💾 SALVA TUTTO</button>
+      <button class="btn-header btn-save-all" onclick="manualSync()">🔄 AGGIORNA CLOUD</button>
       <button class="btn-header" onclick="openModal()">+ AGGIUNGI GIORNO</button>
     </div>
   </header>
 
   <div id="agenda" class="agenda-container"></div>
 
-  <!-- Modal Aggiungi Giorno -->
-  <div id="modalAdd" class="modal-overlay">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>Aggiungi / Modifica Turno</h2>
-        <button class="btn-close" onclick="closeModal()">CHIUDI / FINE</button>
-      </div>
-
-      <div class="form-group">
-        <label>Data</label>
-        <input type="date" id="inputDate" class="form-control">
-      </div>
-
-      <div class="form-group">
-        <label>Turno</label>
-        <select id="selectShift" class="form-control">
-          <option value="01–07">01–07</option>
-          <option value="07–13">07–13</option>
-          <option value="13–19">13–19</option>
-          <option value="19–01">19–01</option>
-          <option value="Riposo">Riposo</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Dettaglio Permesso</label>
-        <select id="selectPermesso" class="form-control">
-          <option value="">Nessuno</option>
-          <option value="1h">1 ora</option>
-          <option value="2h">2 ore</option>
-          <option value="3h">3 ore</option>
-          <option value="4h">4 ore</option>
-          <option value="Tutto il turno">Tutto il turno</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Dettaglio Straordinario</label>
-        <select id="selectStraordinario" class="form-control">
-          <option value="">Nessuno</option>
-          <option value="1h">1 ora</option>
-          <option value="2h">2 ore</option>
-          <option value="3h">3 ore</option>
-          <option value="4h">4 ore</option>
-          <option value="5h">5 ore</option>
-          <option value="6h">6 ore</option>
-          <option value="Tutto il turno">Tutto il turno</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Caratteristiche Aggiuntive</label>
-        <div class="checkbox-grid">
-          <label class="checkbox-btn"><input type="checkbox" id="chkCambio"> Cambio turno</label>
-          <label class="checkbox-btn"><input type="checkbox" id="chkCambioPagato"> Cambio pagato</label>
-          <label class="checkbox-btn"><input type="checkbox" id="chkFerie"> Ferie</label>
-          <label class="checkbox-btn"><input type="checkbox" id="chkMalattia"> Malattia</label>
-          <label class="checkbox-btn"><input type="checkbox" id="chkDoppio"> Doppio turno</label>
-          <label class="checkbox-btn"><input type="checkbox" id="chkCigo"> CIGO</label>
-          <label class="checkbox-btn"><input type="checkbox" id="chkChiusura"> Chiusura terminal</label>
-          <label class="checkbox-btn"><input type="checkbox" id="chkAltro"> Altro</label>
-        </div>
-      </div>
-
-      <button class="btn-submit" onclick="saveShiftContinuous()">SALVA E CONTINUA</button>
-    </div>
-  </div>
-
-  <!-- Bar Resoconto Bottom -->
-  <div class="summary-bar" onclick="openSummary()">
-    <div class="summary-bar-text" id="summaryBarTitle">RESOCONTO · OTTOBRE 2026 ›</div>
-  </div>
-
-  <!-- Pagina Resoconto Fullscreen -->
-  <div id="summaryPage" class="summary-page">
-    <div class="summary-nav">
-      <button onclick="changeSummaryMonth(-1)">‹</button>
-      <div class="summary-title" id="summaryMonthLabel">OTTOBRE 2026</div>
-      <button onclick="changeSummaryMonth(1)">›</button>
-    </div>
-
-    <div class="summary-grid" id="summaryGrid"></div>
-
-    <button class="btn-back-agenda" onclick="closeSummary()">TORNA ALL'AGENDA</button>
-  </div>
-
-  <script>
-    const STORAGE_KEY = 'miei_turni_v4_data';
-    const OLD_STORAGE_KEY = 'miei_turni_data';
-
-    let shiftsData = [];
-    let currentSummaryDate = new Date();
-
-    window.addEventListener('DOMContentLoaded', () => {
-      loadAndMigrateData();
-      renderAgenda();
-      updateSummaryBar();
-      setupSwipeGesture();
-      document.getElementById('inputDate').valueAsDate = new Date();
-    });
-
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js').then(() => {
-        console.log('Service Worker v4.0 Registrato');
-      });
-    }
-
-    function loadAndMigrateData() {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        shiftsData = JSON.parse(saved);
-      } else {
-        const oldSaved = localStorage.getItem(OLD_STORAGE_KEY);
-        if (oldSaved) {
-          try {
-            const oldData = JSON.parse(oldSaved);
-            shiftsData = migrateV3ToV4(oldData);
-            saveData();
-          } catch(e) {
-            console.error('Errore durante la migrazione:', e);
-            shiftsData = [];
-          }
-        }
-      }
-    }
-
-    function migrateV3ToV4(oldData) {
-      const newData = [];
-      for (const entry of oldData) {
-        let shiftType = entry.shift || '07–13';
-        if (entry.isRiposo) {
-          shiftType = 'Riposo';
-        }
-        newData.push({
-          id: entry.id || 'shift_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-          date: entry.date,
-          shift: shiftType,
-          permesso: entry.permesso || '',
-          straordinario: entry.straordinario || '',
-          cambio: entry.cambio || false,
-          cambioPagato: entry.cambioPagato || false,
-          ferie: entry.ferie || false,
-          malattia: entry.malattia || false,
-          doppio: entry.doppio || false,
-          cigo: false,
-          chiusura: false,
-          altro: entry.altro || false
-        });
-      }
-      return newData;
-    }
-
-    function saveData() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(shiftsData));
-    }
-
-    function saveAllForce() {
-      saveData();
-      showToast('Salvato ✓');
-    }
-
-    function showToast(msg) {
-      const toast = document.getElementById('toast');
-      toast.innerText = msg;
-      toast.style.display = 'block';
-      setTimeout(() => { toast.style.display = 'none'; }, 2000);
-    }
-
-    function openModal() {
-      document.getElementById('modalAdd').classList.add('active');
-    }
-
-    function closeModal() {
-      document.getElementById('modalAdd').classList.remove('active');
-    }
-
-    function saveShiftContinuous() {
-      const dateVal = document.getElementById('inputDate').value;
-      if (!dateVal) return alert('Seleziona una data valida');
-
-      const shiftVal = document.getElementById('selectShift').value;
-      const permessoVal = document.getElementById('selectPermesso').value;
-      const straordinarioVal = document.getElementById('selectStraordinario').value;
-
-      const newShift = {
-        id: 'shift_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
-        date: dateVal,
-        shift: shiftVal,
-        permesso: permessoVal,
-        straordinario: straordinarioVal,
-        cambio: document.getElementById('chkCambio').checked,
-        cambioPagato: document.getElementById('chkCambioPagato').checked,
-        ferie: document.getElementById('chkFerie').checked,
-        malattia: document.getElementById('chkMalattia').checked,
-        doppio: document.getElementById('chkDoppio').checked,
-        cigo: document.getElementById('chkCigo').checked,
-        chiusura: document.getElementById('chkChiusura').checked,
-        altro: document.getElementById('chkAltro').checked
-      };
-
-      shiftsData.push(newShift);
-      saveData();
-      renderAgenda();
-      updateSummaryBar();
-      showToast('Turno Aggiunto ✓');
-
-      // Lascia la stessa data per inserire facilmente un secondo turno nello stesso giorno
-    }
-
-    function deleteShift(id) {
-      shiftsData = shiftsData.filter(s => s.id !== id);
-      saveData();
-      renderAgenda();
-      updateSummaryBar();
-    }
-
-    // Render Agenda con supporto MULTI-TURNO nello stesso giorno
-    function renderAgenda() {
-      const container = document.getElementById('agenda');
-      container.innerHTML = '';
-
-      if (shiftsData.length === 0) {
-        container.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text-sub);">Nessun turno inserito. Premi "+ AGGIUNGI GIORNO" per iniziare.</div>';
-        return;
-      }
-
-      // Raggruppa tutti i turni per Data
-      const groupedByDate = {};
-      shiftsData.forEach(shift => {
-        if (!groupedByDate[shift.date]) {
-          groupedByDate[shift.date] = [];
-        }
-        groupedByDate[shift.date].push(shift);
-      });
-
-      // Ordina le date in modo crescente
-      const sortedDates = Object.keys(groupedByDate).sort((a, b) => new Date(a) - new Date(b));
-
-      let currentMonthKey = '';
-
-      sortedDates.forEach(dateStr => {
-        const shiftsForDay = groupedByDate[dateStr];
-        const d = new Date(dateStr + 'T00:00:00');
-        const monthKey = d.toLocaleString('it-IT', { month: 'long', year: 'numeric' }).toUpperCase();
-
-        if (monthKey !== currentMonthKey) {
-          currentMonthKey = monthKey;
-          const monthDiv = document.createElement('div');
-          monthDiv.className = 'month-header';
-          monthDiv.innerText = currentMonthKey;
-          container.appendChild(monthDiv);
-        }
-
-        const dayCard = document.createElement('div');
-        dayCard.className = 'day-card';
-
-        const formattedDay = d.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' });
-        dayCard.innerHTML = `<div class="day-title">${capitalize(formattedDay)}</div><div class="shifts-list"></div>`;
-
-        const shiftsList = dayCard.querySelector('.shifts-list');
-        
-        // Inserisce tutti i turni presenti in quella data
-        shiftsForDay.forEach(shift => {
-          shiftsList.appendChild(createShiftRow(shift));
-        });
-
-        container.appendChild(dayCard);
-      });
-    }
-
-    function createShiftRow(shift) {
-      const row = document.createElement('div');
-      row.className = 'shift-row';
-
-      const color = getShiftColor(shift);
-
-      let tagsHtml = '';
-      if (shift.cambio) tagsHtml += `<span class="tag tag-cambio">Cambio turno</span>`;
-      if (shift.cambioPagato) tagsHtml += `<span class="tag tag-cambio-pagato">Cambio pagato</span>`;
-      if (shift.ferie) tagsHtml += `<span class="tag tag-ferie">Ferie</span>`;
-      if (shift.malattia) tagsHtml += `<span class="tag tag-malattia">Malattia</span>`;
-      if (shift.permesso) tagsHtml += `<span class="tag tag-permesso">Permesso ${shift.permesso}</span>`;
-      if (shift.straordinario) tagsHtml += `<span class="tag tag-straordinario">Straordinario ${shift.straordinario}</span>`;
-      if (shift.doppio) tagsHtml += `<span class="tag tag-doppio">Doppio turno</span>`;
-      if (shift.cigo) tagsHtml += `<span class="tag tag-cigo">CIGO</span>`;
-      if (shift.chiusura) tagsHtml += `<span class="tag tag-chiusura">Chiusura terminal</span>`;
-      if (shift.altro) tagsHtml += `<span class="tag tag-altro">Altro</span>`;
-
-      row.innerHTML = `
-        <div>
-          <div class="shift-main">
-            <div class="shift-badge-color" style="background:${color}"></div>
-            <div class="shift-time">${shift.shift}</div>
-          </div>
-          <div class="shift-tags">${tagsHtml}</div>
-        </div>
-        <button class="btn-delete-shift" onclick="deleteShift('${shift.id}')">✕</button>
-      `;
-
-      return row;
-    }
-
-    function getShiftColor(shift) {
-      if (shift.shift === 'Riposo') return 'var(--accent-gray)';
-      if (shift.ferie || shift.malattia) return 'var(--accent-red)';
-      if (shift.cambioPagato) return 'var(--accent-purple-dark)';
-      if (shift.cambio) return 'var(--accent-purple)';
-      if (shift.straordinario) return 'var(--accent-orange)';
-      if (shift.permesso) return 'var(--accent-green)';
-      return 'var(--accent-blue)';
-    }
-
-    function capitalize(str) {
-      return str.charAt(0).toUpperCase() + str.slice(1);
-    }
-
-    function updateSummaryBar() {
-      const monthName = currentSummaryDate.toLocaleString('it-IT', { month: 'long', year: 'numeric' }).toUpperCase();
-      document.getElementById('summaryBarTitle').innerText = `RESOCONTO · ${monthName} ›`;
-    }
-
-    function openSummary() {
-      renderSummaryPage();
-      document.getElementById('summaryPage').classList.add('active');
-    }
-
-    function closeSummary() {
-      document.getElementById('summaryPage').classList.remove('active');
-    }
-
-    function changeSummaryMonth(delta) {
-      currentSummaryDate.setMonth(currentSummaryDate.getMonth() + delta);
-      updateSummaryBar();
-      renderSummaryPage();
-    }
-
-    function renderSummaryPage() {
-      const year = currentSummaryDate.getFullYear();
-      const month = currentSummaryDate.getMonth();
-
-      const monthName = currentSummaryDate.toLocaleString('it-IT', { month: 'long', year: 'numeric' }).toUpperCase();
-      document.getElementById('summaryMonthLabel').innerText = monthName;
-
-      const monthlyShifts = shiftsData.filter(s => {
-        const d = new Date(s.date + 'T00:00:00');
-        return d.getFullYear() === year && d.getMonth() === month;
-      });
-
-      let turniTotali = 0;
-      let riposi = 0;
-      let cambi = 0;
-      let cambiPagati = 0;
-      let ferie = 0;
-      let malattia = 0;
-      let permessi = 0;
-      let straordinari = 0;
-      let doppi = 0;
-      let cigo = 0;
-      let chiusura = 0;
-
-      monthlyShifts.forEach(s => {
-        if (s.shift === 'Riposo') {
-          riposi++;
-        } else {
-          turniTotali++;
-        }
-
-        if (s.cambio) cambi++;
-        if (s.cambioPagato) cambiPagati++;
-        if (s.ferie) ferie++;
-        if (s.malattia) malattia++;
-        if (s.permesso) permessi++;
-        if (s.straordinario) straordinari++;
-        if (s.doppio) doppi++;
-        if (s.cigo) cigo++;
-        if (s.chiusura) chiusura++;
-      });
-
-      const grid = document.getElementById('summaryGrid');
-      grid.innerHTML = `
-        <div class="summary-card"><span style="color:var(--accent-blue)">Turni</span><span class="num">${turniTotali}</span></div>
-        <div class="summary-card"><span style="color:var(--accent-gray)">Riposi</span><span class="num">${riposi}</span></div>
-        <div class="summary-card"><span style="color:var(--accent-purple)">Cambi Turno</span><span class="num">${cambi}</span></div>
-        <div class="summary-card"><span style="color:var(--accent-purple-dark)">Cambi Pagati</span><span class="num">${cambiPagati}</span></div>
-        <div class="summary-card"><span style="color:var(--accent-red)">Ferie</span><span class="num">${ferie}</span></div>
-        <div class="summary-card"><span style="color:var(--accent-red)">Malattia</span><span class="num">${malattia}</span></div>
-        <div class="summary-card"><span style="color:var(--accent-green)">Permessi</span><span class="num">${permessi}</span></div>
-        <div class="summary-card"><span style="color:var(--accent-orange)">Straordinari</span><span class="num">${straordinari}</span></div>
-        <div class="summary-card"><span style="color:var(--accent-purple)">Doppio Turno</span><span class="num">${doppi}</span></div>
-        <div class="summary-card"><span style="color:var(--accent-blue)">CIGO</span><span class="num">${cigo}</span></div>
-        <div class="summary-card"><span style="color:var(--accent-orange)">Chiusura Terminal</span><span class="num">${chiusura}</span></div>
-      `;
-    }
-
-    function setupSwipeGesture() {
-      const summaryPage = document.getElementById('summaryPage');
-      let touchStartX = 0;
-      let touchEndX = 0;
-
-      summaryPage.addEventListener('touchstart', e => {
-        touchStartX = e.changedTouches[0].screenX;
-      }, false);
-
-      summaryPage.addEventListener('touchend', e => {
-        touchEndX = e.changedTouches[0].screenX;
-        handleSwipe();
-      }, false);
-
-      function handleSwipe() {
-        const threshold = 50;
-        if (touchEndX < touchStartX - threshold) {
-          changeSummaryMonth(1);
-        }
-        if (touchEndX > touchStartX + threshold) {
-          changeSummaryMonth(-1);
-        }
-      }
-    }
-  </script>
-</body>
-</html>
+  <!-- Modal Aggiungi
