@@ -476,7 +476,6 @@
     </div>
 
     <button class="btn-primary" onclick="saveShiftContinuous()">SALVA</button>
-    <button class="btn-primary" style="background: var(--bg-card); border: 1px solid var(--border-color); margin-top: 8px;" onclick="saveShiftContinuous(); closeModal();">SALVA E CHIUDI</button>
   </div>
 
   <div class="summary-page" id="summaryPage">
@@ -588,7 +587,7 @@
       shiftsData.push(newShift);
       renderAgenda();
 
-      // Avanza automaticamente al giorno dopo per l'inserimento continuo
+      // Avanza automaticamente la data al giorno dopo per l'inserimento continuo
       const nextDate = new Date(dateVal + 'T00:00:00');
       nextDate.setDate(nextDate.getDate() + 1);
       dateInput.valueAsDate = nextDate;
