@@ -500,11 +500,16 @@
     let currentSummaryDate = new Date();
     let scrollObserver = null;
     let currentSortedDates = [];
+    let isInitialLoad = true;
 
     window.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('inputDate').valueAsDate = new Date();
       await fetchFromCloud();
       renderAgenda();
+      if (isInitialLoad) {
+        scrollToToday(currentSortedDates);
+        isInitialLoad = false;
+      }
       setupSwipeGesture();
     });
 
@@ -716,7 +721,6 @@
       });
 
       setupScrollObserver();
-      scrollToToday(currentSortedDates);
     }
 
     function scrollToToday(sortedDates) {
