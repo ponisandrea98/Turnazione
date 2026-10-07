@@ -259,7 +259,7 @@
       letter-spacing: 0.5px;
     }
 
-    /* SCHERMATA COMPLETA RESOCONTO / MODALE (RIPRISTINATE ORIGINALI) */
+    /* SCHERMATA COMPLETA RESOCONTO / MODALE */
     .modal-overlay, .summary-page {
       position: fixed;
       top: 0;
@@ -329,7 +329,7 @@
       color: var(--text-main);
     }
 
-    /* FORM AGGIUNTA TURNO */
+    /* FORM AGGIUNTA TURNO & FIX INPUT DATA IOS */
     .form-group {
       margin-bottom: 14px;
     }
@@ -340,17 +340,26 @@
       font-weight: 700;
       color: var(--text-sub);
       margin-bottom: 6px;
-
     }
 
     .form-control {
       width: 100%;
+      max-width: 100%;
       background: var(--bg-card);
       border: 1px solid var(--border-color);
       color: var(--text-main);
       padding: 10px 12px;
       border-radius: 10px;
       font-size: 14px;
+      -webkit-appearance: none;
+      appearance: none;
+      box-sizing: border-box;
+      text-align: center;
+    }
+
+    input[type="date"].form-control {
+      display: block;
+      min-height: 42px;
     }
 
     .checkbox-grid {
@@ -395,7 +404,7 @@
       z-index: 300;
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
-  </style>
+</style>
 </head>
 <body>
 
