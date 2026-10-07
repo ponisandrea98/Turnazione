@@ -2,15 +2,8 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>I Miei Turni 4.0 Cloud</title>
-  
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Miei Turni">
-  <link rel="apple-touch-icon" href="icon-180.png">
-  <link rel="manifest" href="manifest.json">
-  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Turnazione</title>
   <style>
     :root {
       --bg-body: #0f172a;
@@ -41,7 +34,7 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* INTESTAZIONE SUPERIORE CON I 3 TASTI ALLINEATI */
+    /* INTESTAZIONE SUPERIORE MODERNA CON TASTI FUNZIONANTI */
     header {
       position: sticky;
       top: 0;
@@ -70,7 +63,6 @@
       gap: 8px;
     }
 
-    /* Tasto 1: Sincronizza (Iconico) */
     .btn-icon-header {
       background: var(--bg-body);
       color: var(--text-main);
@@ -85,7 +77,6 @@
       cursor: pointer;
     }
 
-    /* Tasto 2: OGGI (Secondario) */
     .btn-today-header {
       background: rgba(0, 122, 255, 0.15);
       color: var(--accent-blue);
@@ -99,7 +90,6 @@
       cursor: pointer;
     }
 
-    /* Tasto 3: + Giorno (Principale) */
     .btn-add-header {
       background: var(--accent-blue);
       color: #ffffff;
@@ -120,7 +110,7 @@
       transform: scale(0.96);
     }
 
-    /* CONTENITORE AGENDA E SCHEDE GIORNO */
+    /* AGENDA E CARDS GIORNO */
     .agenda-container {
       max-width: 600px;
       margin: 0 auto;
@@ -171,7 +161,6 @@
       letter-spacing: 0.5px;
     }
 
-    /* RIGHE DEI TURNI ED ETICHETTE */
     .shifts-list {
       display: flex;
       flex-direction: column;
@@ -236,7 +225,6 @@
     .tag-chiusura { background: rgba(245, 158, 11, 0.2); color: var(--accent-orange); }
     .tag-altro { background: rgba(100, 116, 139, 0.2); color: var(--text-sub); }
 
-    /* PULSANTE CANCELLAZIONE CON DOPPIA CONFERMA */
     .btn-delete-shift {
       background: none;
       border: none;
@@ -248,7 +236,7 @@
       line-height: 1;
     }
 
-    /* BARRA INFERIORE DI RESOCONTO */
+    /* BARRA RESOCONTO ORIGINALE IN BASSO */
     .summary-bar {
       position: fixed;
       bottom: 0;
@@ -271,14 +259,14 @@
       letter-spacing: 0.5px;
     }
 
-    /* MODALE E SCHERMATA RESOCONTO COMPLETO */
+    /* SCHERMATA COMPLETA RESOCONTO / MODALE (RIPRISTINATE ORIGINALI) */
     .modal-overlay, .summary-page {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(15, 23, 42, 0.95);
+      background: var(--bg-body);
       z-index: 200;
       display: none;
       flex-direction: column;
@@ -313,7 +301,6 @@
       cursor: pointer;
     }
 
-    /* GRIGLIA CARDS RESOCONTO */
     .summary-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -342,7 +329,57 @@
       color: var(--text-main);
     }
 
-    /* TOAST NOTIFICA */
+    /* FORM AGGIUNTA TURNO */
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-sub);
+      margin-bottom: 6px;
+
+    }
+
+    .form-control {
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 14px;
+    }
+
+    .checkbox-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+    }
+
+    .btn-primary {
+      background: var(--accent-blue);
+      color: #fff;
+      border: none;
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 15px;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+
     #toast {
       position: fixed;
       top: 60px;
@@ -358,103 +395,101 @@
       z-index: 300;
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
-</style>
+  </style>
+</head>
+<body>
 
   <header>
-  <h1>Turnazione</h1>
-  <div class="header-actions">
-    <button class="btn-icon-header" onclick="syncWithCloud()" title="Sincronizza Cloud">↻</button>
-    <button class="btn-today-header" onclick="scrollToTodayManually()">OGGI</button>
-    <button class="btn-add-header" onclick="openModal()">＋ Giorno</button>
-  </div>
-</header>
-
-  <div id="agenda" class="agenda-container"></div>
-
-  <!-- Modal Aggiungi Giorno -->
-  <div id="modalAdd" class="modal-overlay">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>Aggiungi / Modifica Turno</h2>
-        <button class="btn-close" onclick="closeModal()">CHIUDI / FINE</button>
-      </div>
-
-      <div class="form-group">
-        <label>Data</label>
-        <input type="date" id="inputDate" class="form-control">
-      </div>
-
-      <div class="form-group">
-        <label>Turno</label>
-        <select id="selectShift" class="form-control">
-          <option value="01–07">01–07</option>
-          <option value="07–13">07–13</option>
-          <option value="13–19">13–19</option>
-          <option value="19–01">19–01</option>
-          <option value="Riposo">Riposo</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Dettaglio Permesso</label>
-        <select id="selectPermesso" class="form-control">
-          <option value="">Nessuno</option>
-          <option value="1h">1 ora</option>
-          <option value="2h">2 ore</option>
-          <option value="3h">3 ore</option>
-          <option value="4h">4 ore</option>
-          <option value="Tutto il turno">Tutto il turno</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Dettaglio Straordinario</label>
-        <select id="selectStraordinario" class="form-control">
-          <option value="">Nessuno</option>
-          <option value="1h">1 ora</option>
-          <option value="2h">2 ore</option>
-          <option value="3h">3 ore</option>
-          <option value="4h">4 ore</option>
-          <option value="5h">5 ore</option>
-          <option value="6h">6 ore</option>
-          <option value="Tutto il turno">Tutto il turno</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Caratteristiche Aggiuntive</label>
-        <div class="checkbox-grid">
-          <label class="checkbox-btn"><input type="checkbox" id="chkCambio"> Cambio turno</label>
-          <label class="checkbox-btn"><input type="checkbox" id="chkCambioPagato"> Cambio pagato</label>
-          <label class="checkbox-btn"><input type="checkbox" id="chkFerie"> Ferie</label>
-          <label class="checkbox-btn"><input type="checkbox" id="chkMalattia"> Malattia</label>
-          <label class="checkbox-btn"><input type="checkbox" id="chkDoppio"> Doppio turno</label>
-          <label class="checkbox-btn"><input type="checkbox" id="chkCigo"> CIGO</label>
-          <label class="checkbox-btn"><input type="checkbox" id="chkChiusura"> Chiusura terminal</label>
-          <label class="checkbox-btn"><input type="checkbox" id="chkAltro"> Altro</label>
-        </div>
-      </div>
-
-      <button class="btn-submit" onclick="saveShiftContinuous()">SALVA E CONTINUA</button>
+    <h1>Turnazione</h1>
+    <div class="header-actions">
+      <button class="btn-icon-header" onclick="syncWithCloud()" title="Sincronizza">↻</button>
+      <button class="btn-today-header" onclick="scrollToTodayManually()">OGGI</button>
+      <button class="btn-add-header" onclick="openModal()">＋ Giorno</button>
     </div>
-  </div>
+  </header>
 
+  <div id="toast">Sincronizzazione...</div>
+
+  <div class="agenda-container" id="agenda"></div>
+
+  <!-- BARRA RESOCONTO IN BASSO -->
   <div class="summary-bar" onclick="openSummary()">
-    <div class="summary-bar-text" id="summaryBarTitle">RESOCONTO · OTTOBRE 2026 ›</div>
+    <span class="summary-bar-title" id="summaryBarTitle">RESOCONTO · CARICAMENTO... ›</span>
   </div>
 
-  <div id="summaryPage" class="summary-page">
-    <div class="summary-nav">
-      <button onclick="changeSummaryMonth(-1)">‹</button>
-      <div class="summary-title" id="summaryMonthLabel">OTTOBRE 2026</div>
-      <button onclick="changeSummaryMonth(1)">›</button>
+  <!-- MODALE AGGIUNGI GIORNO -->
+  <div class="modal-overlay" id="modalAdd">
+    <div class="modal-header">
+      <div class="modal-title">Aggiungi Turno</div>
+      <button class="btn-close" onclick="closeModal()">✕</button>
     </div>
+
+    <div class="form-group">
+      <label>Data</label>
+      <input type="date" id="inputDate" class="form-control">
+    </div>
+
+    <div class="form-group">
+      <label>Turno</label>
+      <select id="selectShift" class="form-control">
+        <option value="Mattina (06:00 - 14:00)">Mattina (06:00 - 14:00)</option>
+        <option value="Pomeriggio (14:00 - 22:00)">Pomeriggio (14:00 - 22:00)</option>
+        <option value="Notte (22:00 - 06:00)">Notte (22:00 - 06:00)</option>
+        <option value="Riposo">Riposo</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Permesso / Ore</label>
+      <select id="selectPermesso" class="form-control">
+        <option value="">Nessuno</option>
+        <option value="1 ora">1 ora</option>
+        <option value="2 ore">2 ore</option>
+        <option value="3 ore">3 ore</option>
+        <option value="4 ore">4 ore</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Straordinario / Ore</label>
+      <select id="selectStraordinario" class="form-control">
+        <option value="">Nessuno</option>
+        <option value="1 ora">1 ora</option>
+        <option value="2 ore">2 ore</option>
+        <option value="3 ore">3 ore</option>
+        <option value="4 ore">4 ore</option>
+      </select>
+    </div>
+
+    <div class="checkbox-grid">
+      <label class="checkbox-item"><input type="checkbox" id="chkCambio"> Cambio turno</label>
+      <label class="checkbox-item"><input type="checkbox" id="chkCambioPagato"> Cambio pagato</label>
+      <label class="checkbox-item"><input type="checkbox" id="chkFerie"> Ferie</label>
+      <label class="checkbox-item"><input type="checkbox" id="chkMalattia"> Malattia</label>
+      <label class="checkbox-item"><input type="checkbox" id="chkDoppio"> Doppio turno</label>
+      <label class="checkbox-item"><input type="checkbox" id="chkCigo"> CIGO</label>
+      <label class="checkbox-item"><input type="checkbox" id="chkChiusura"> Chiusura terminal</label>
+      <label class="checkbox-item"><input type="checkbox" id="chkAltro"> Altro</label>
+    </div>
+
+    <button class="btn-primary" onclick="saveShiftContinuous(); closeModal();">SALVA E CHIUDI</button>
+  </div>
+
+  <!-- SCHERMATA COMPLETA RESOCONTO -->
+  <div class="summary-page" id="summaryPage">
+    <div class="modal-header">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <button class="btn-close" onclick="changeSummaryMonth(-1)">‹</button>
+        <div class="modal-title" id="summaryMonthLabel">MESE</div>
+        <button class="btn-close" onclick="changeSummaryMonth(1)">›</button>
+      </div>
+      <button class="btn-close" onclick="closeSummary()">✕</button>
+    </div>
+
     <div class="summary-grid" id="summaryGrid"></div>
-    <button class="btn-back-agenda" onclick="closeSummary()">TORNA ALL'AGENDA</button>
   </div>
 
 <script>
-    // Incolla qui le tue chiavi di JSONBin
     const BIN_ID = '6ac51e21ac6210605a19b157';
     const MASTER_KEY = '$2a$10$mdcCYDxaDgUqQi5RhuFhXeoE4LgdhCH5etDoVuJUR7F5033qNa88K';
 
@@ -462,6 +497,7 @@
     let shiftsData = [];
     let currentSummaryDate = new Date();
     let scrollObserver = null;
+    let currentSortedDates = [];
 
     window.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('inputDate').valueAsDate = new Date();
@@ -550,14 +586,12 @@
       await syncWithCloud();
     }
 
-    // GESTIONE DOPPIA CONFERMA CON ANNULLAMENTO AL TOCCO ESTERNO
     function handleDeleteClick(btn, id, event) {
       if (event) event.stopPropagation();
 
       if (btn.dataset.confirming === 'true') {
         deleteShift(id);
       } else {
-        // Ripristina eventuali altri tasti aperti
         document.querySelectorAll('.btn-delete-shift[data-confirming="true"]').forEach(resetDeleteBtn);
 
         btn.dataset.confirming = 'true';
@@ -569,13 +603,9 @@
         btn.style.fontSize = '12px';
         btn.style.fontWeight = 'bold';
 
-        // Annullamento automatico dopo 3 secondi
-        const timerId = setTimeout(() => {
-          resetDeleteBtn(btn);
-        }, 3000);
+        const timerId = setTimeout(() => { resetDeleteBtn(btn); }, 3000);
         btn.dataset.timerId = timerId;
 
-        // Annullamento IMMEDIATO al tocco in un punto qualsiasi fuori dal tasto
         const cancelOnOutsideClick = (e) => {
           if (!btn.contains(e.target)) {
             resetDeleteBtn(btn);
@@ -591,7 +621,6 @@
       }
     }
 
-    // Funzione di supporto per ripristinare la X originale
     function resetDeleteBtn(btn) {
       if (btn && document.body.contains(btn)) {
         if (btn.dataset.timerId) clearTimeout(parseInt(btn.dataset.timerId));
@@ -609,7 +638,6 @@
       await syncWithCloud();
     }
 
-    // Restituisce la data odierna in formato YYYY-MM-DD usando il fuso orario locale
     function getTodayLocalDateStr() {
       const today = new Date();
       const year = today.getFullYear();
@@ -622,9 +650,7 @@
       const container = document.getElementById('agenda');
       container.innerHTML = '';
 
-      if (scrollObserver) {
-        scrollObserver.disconnect();
-      }
+      if (scrollObserver) { scrollObserver.disconnect(); }
 
       if (shiftsData.length === 0) {
         container.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text-sub);">Nessun turno inserito. Premi "+ AGGIUNGI GIORNO" per iniziare.</div>';
@@ -638,12 +664,11 @@
         groupedByDate[shift.date].push(shift);
       });
 
-      const sortedDates = Object.keys(groupedByDate).sort((a, b) => new Date(a) - new Date(b));
+      currentSortedDates = Object.keys(groupedByDate).sort((a, b) => new Date(a) - new Date(b));
       let currentMonthKey = '';
-
       const todayStr = getTodayLocalDateStr();
 
-      sortedDates.forEach(dateStr => {
+      currentSortedDates.forEach(dateStr => {
         const shiftsForDay = groupedByDate[dateStr];
         const d = new Date(dateStr + 'T00:00:00');
         const monthKey = d.toLocaleString('it-IT', { month: 'long', year: 'numeric' }).toUpperCase();
@@ -661,9 +686,7 @@
         dayCard.setAttribute('data-date', dateStr);
 
         const isToday = (dateStr === todayStr);
-        if (isToday) {
-          dayCard.classList.add('today-card');
-        }
+        if (isToday) { dayCard.classList.add('today-card'); }
         
         const formattedDay = d.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' });
         const todayBadgeHtml = isToday ? `<span class="today-badge">Oggi</span>` : '';
@@ -679,13 +702,11 @@
       });
 
       setupScrollObserver();
-      scrollToToday(sortedDates);
+      scrollToToday(currentSortedDates);
     }
 
-    // POSIZIONAMENTO ISTANTANEO AL GIORNO DI OGGI (AL CENTRO DELLA SCHERMATA)
     function scrollToToday(sortedDates) {
       const todayStr = getTodayLocalDateStr();
-      
       let targetDate = sortedDates.find(d => d >= todayStr) || sortedDates[sortedDates.length - 1];
 
       if (targetDate) {
@@ -696,13 +717,22 @@
       }
     }
 
-    // OSSERVATORE PER AGGIORNARE IL MESE NEL RESOCONTO MENTRE SCORRI
+    // FUNZIONE PULSANTE "OGGI" FUNZIONANTE
+    function scrollToTodayManually() {
+      if (currentSortedDates.length === 0) return;
+      const todayStr = getTodayLocalDateStr();
+      let targetDate = currentSortedDates.find(d => d >= todayStr) || currentSortedDates[currentSortedDates.length - 1];
+
+      if (targetDate) {
+        const targetEl = document.querySelector(`.day-card[data-date="${targetDate}"]`);
+        if (targetEl) {
+          targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+    }
+
     function setupScrollObserver() {
-      const options = {
-        root: null,
-        rootMargin: '-20% 0px -60% 0px',
-        threshold: 0
-      };
+      const options = { root: null, rootMargin: '-20% 0px -60% 0px', threshold: 0 };
 
       scrollObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
