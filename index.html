@@ -404,7 +404,7 @@
       z-index: 300;
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
-</style>
+  </style>
 </head>
 <body>
 
@@ -426,7 +426,7 @@
     <span class="summary-bar-title" id="summaryBarTitle">RESOCONTO · CARICAMENTO... ›</span>
   </div>
 
-  <!-- MODALE AGGIUNGI GIORNO -->
+  <!-- MODALE AGGIUNGI GIORNO (CON TURNI DA 6 ORE CORRETTI) -->
   <div class="modal-overlay" id="modalAdd">
     <div class="modal-header">
       <div class="modal-title">Aggiungi Turno</div>
@@ -441,9 +441,10 @@
     <div class="form-group">
       <label>Turno</label>
       <select id="selectShift" class="form-control">
-        <option value="Mattina (06:00 - 14:00)">Mattina (06:00 - 14:00)</option>
-        <option value="Pomeriggio (14:00 - 22:00)">Pomeriggio (14:00 - 22:00)</option>
-        <option value="Notte (22:00 - 06:00)">Notte (22:00 - 06:00)</option>
+        <option value="Notte (01:00 - 07:00)">Notte (01:00 - 07:00)</option>
+        <option value="Mattina (07:00 - 13:00)">Mattina (07:00 - 13:00)</option>
+        <option value="Pomeriggio (13:00 - 19:00)">Pomeriggio (13:00 - 19:00)</option>
+        <option value="Sera (19:00 - 01:00)">Sera (19:00 - 01:00)</option>
         <option value="Riposo">Riposo</option>
       </select>
     </div>
@@ -662,7 +663,7 @@
       if (scrollObserver) { scrollObserver.disconnect(); }
 
       if (shiftsData.length === 0) {
-        container.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text-sub);">Nessun turno inserito. Premi "+ AGGIUNGI GIORNO" per iniziare.</div>';
+        container.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text-sub);">Nessun turno inserito. Premi "+ Giorno" per iniziare.</div>';
         updateSummaryBar();
         return;
       }
@@ -726,7 +727,6 @@
       }
     }
 
-    // FUNZIONE PULSANTE "OGGI" FUNZIONANTE
     function scrollToTodayManually() {
       if (currentSortedDates.length === 0) return;
       const todayStr = getTodayLocalDateStr();
@@ -762,6 +762,14 @@
     function createShiftRow(shift) {
       const row = document.createElement('div');
       row.className = 'shift-row';
+
+      // Conversione automatica dei vecchi turni salvati senza nome
+      let displayShift = shift.shift;
+      if (displayShift === '01:00 - 07:00' || displayShift === '01:00-07:00') displayShift = 'Notte (01:00 - 07:00)';
+      else if (displayShift === '07:00 - 13:00' || displayShift === '07:00-13:00') displayShift = 'Mattina (07:00 - 13:00)';
+      else if (displayShift === '13:00 - 19:00' || displayShift === '13:00-19:00') displayShift = 'Pomeriggio (13:00 - 19:00)';
+      else if (displayShift === '19:00 - 01:00' || displayShift === '19:00-01:00') displayShift = 'Sera (19:00 - 01:00)';
+
       const color = getShiftColor(shift);
 
       let tagsHtml = '';
@@ -780,7 +788,7 @@
         <div>
           <div class="shift-main">
             <div class="shift-badge-color" style="background:${color}"></div>
-            <div class="shift-time">${shift.shift}</div>
+            <div class="shift-time">${displayShift}</div>
           </div>
           <div class="shift-tags">${tagsHtml}</div>
         </div>
