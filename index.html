@@ -207,12 +207,12 @@
     const STORAGE_KEY = 'miei_turni_v4_data';
     let shiftsData = [];
     let currentSummaryDate = new Date();
+    let scrollObserver = null;
 
     window.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('inputDate').valueAsDate = new Date();
       await fetchFromCloud();
       renderAgenda();
-      updateSummaryBar();
       setupSwipeGesture();
     });
 
@@ -293,14 +293,12 @@
 
       shiftsData.push(newShift);
       renderAgenda();
-      updateSummaryBar();
       await syncWithCloud();
     }
 
     async function deleteShift(id) {
       shiftsData = shiftsData.filter(s => s.id !== id);
       renderAgenda();
-      updateSummaryBar();
       await syncWithCloud();
     }
 
@@ -308,8 +306,13 @@
       const container = document.getElementById('agenda');
       container.innerHTML = '';
 
+      if (scrollObserver) {
+        scrollObserver.disconnect();
+      }
+
       if (shiftsData.length === 0) {
         container.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text-sub);">Nessun turno inserito. Premi "+ AGGIUNGI GIORNO" per iniziare.</div>';
+        updateSummaryBar();
         return;
       }
 
@@ -337,6 +340,8 @@
 
         const dayCard = document.createElement('div');
         dayCard.className = 'day-card';
+        dayCard.setAttribute('data-date', dateStr);
+        
         const formattedDay = d.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' });
         dayCard.innerHTML = `<div class="day-title">${capitalize(formattedDay)}</div><div class="shifts-list"></div>`;
 
@@ -347,6 +352,50 @@
 
         container.appendChild(dayCard);
       });
+
+      setupScrollObserver();
+      scrollToToday(sortedDates);
+    }
+
+    // SCORRIMENTO AUTOMATICO AL GIORNO DI OGGI
+    function scrollToToday(sortedDates) {
+      const todayStr = new Date().toISOString().split('T')[0];
+      
+      // Trova oggi o il giorno più vicino dopo oggi
+      let targetDate = sortedDates.find(d => d >= todayStr) || sortedDates[sortedDates.length - 1];
+
+      if (targetDate) {
+        setTimeout(() => {
+          const targetEl = document.querySelector(`.day-card[data-date="${targetDate}"]`);
+          if (targetEl) {
+            targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }, 150);
+      }
+    }
+
+    // OSSERVATORE PER AGGIORNARE IL MESE NEL RESOCONTO MENTRE SCORRI
+    function setupScrollObserver() {
+      const options = {
+        root: null,
+        rootMargin: '-20% 0px -60% 0px',
+        threshold: 0
+      };
+
+      scrollObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const dateStr = entry.target.getAttribute('data-date');
+            if (dateStr) {
+              const d = new Date(dateStr + 'T00:00:00');
+              currentSummaryDate = new Date(d.getFullYear(), d.getMonth(), 1);
+              updateSummaryBar();
+            }
+          }
+        });
+      }, options);
+
+      document.querySelectorAll('.day-card').forEach(card => scrollObserver.observe(card));
     }
 
     function createShiftRow(shift) {
