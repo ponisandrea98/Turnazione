@@ -393,7 +393,7 @@
       scrollToToday(sortedDates);
     }
 
-    // SCORRIMENTO AUTOMATICO AL GIORNO DI OGGI
+    // POSIZIONAMENTO ISTANTANEO AL GIORNO DI OGGI (SENZA SCORRIMENTO ANIMATO)
     function scrollToToday(sortedDates) {
       const todayStr = getTodayLocalDateStr();
       
@@ -401,12 +401,11 @@
       let targetDate = sortedDates.find(d => d >= todayStr) || sortedDates[sortedDates.length - 1];
 
       if (targetDate) {
-        setTimeout(() => {
-          const targetEl = document.querySelector(`.day-card[data-date="${targetDate}"]`);
-          if (targetEl) {
-            targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
-        }, 200);
+        const targetEl = document.querySelector(`.day-card[data-date="${targetDate}"]`);
+        if (targetEl) {
+          // 'auto' salta immediatamente senza animazione
+          targetEl.scrollIntoView({ behavior: 'auto', block: 'start' });
+        }
       }
     }
 
