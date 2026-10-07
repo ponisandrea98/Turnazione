@@ -393,7 +393,7 @@
       scrollToToday(sortedDates);
     }
 
-    // POSIZIONAMENTO ISTANTANEO AL GIORNO DI OGGI (SENZA SCORRIMENTO ANIMATO)
+    // POSIZIONAMENTO ISTANTANEO AL GIORNO DI OGGI (AL CENTRO DELLA SCHERMATA)
     function scrollToToday(sortedDates) {
       const todayStr = getTodayLocalDateStr();
       
@@ -403,8 +403,9 @@
       if (targetDate) {
         const targetEl = document.querySelector(`.day-card[data-date="${targetDate}"]`);
         if (targetEl) {
-          // 'auto' salta immediatamente senza animazione
-          targetEl.scrollIntoView({ behavior: 'auto', block: 'start' });
+          // 'center' allinea la card al centro verticale dello schermo
+          // 'auto' elimina l'animazione di scorrimento
+          targetEl.scrollIntoView({ behavior: 'auto', block: 'center' });
         }
       }
     }
@@ -543,6 +544,6 @@
         if (touchEndX > touchStartX + threshold) changeSummaryMonth(-1);
       }
     }
-  </script>
+</script>
 </body>
 </html>
