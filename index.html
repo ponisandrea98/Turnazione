@@ -99,7 +99,25 @@
     .btn-back-agenda { background: #2c2c2e; color: #fff; border: none; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: 700; margin-top: 24px; width: 100%; cursor: pointer; }
 
     .toast { position: fixed; top: max(20px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); background: rgba(48, 209, 88, 0.95); color: #000; padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 13px; z-index: 400; display: none; }
-  </style>
+  /* Evidenziazione per la card del giorno corrente */
+.day-card.today-card {
+  border: 2px solid var(--accent-blue);
+  box-shadow: 0 0 12px rgba(10, 132, 255, 0.3);
+  background: rgba(10, 132, 255, 0.05);
+}
+
+.today-badge {
+  background: var(--accent-blue);
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-left: 8px;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+</style>
 </head>
 <body>
 
@@ -302,6 +320,15 @@
       await syncWithCloud();
     }
 
+    // Restituisce la data odierna in formato YYYY-MM-DD usando il fuso orario locale
+    function getTodayLocalDateStr() {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
     function renderAgenda() {
       const container = document.getElementById('agenda');
       container.innerHTML = '';
@@ -325,6 +352,8 @@
       const sortedDates = Object.keys(groupedByDate).sort((a, b) => new Date(a) - new Date(b));
       let currentMonthKey = '';
 
+      const todayStr = getTodayLocalDateStr();
+
       sortedDates.forEach(dateStr => {
         const shiftsForDay = groupedByDate[dateStr];
         const d = new Date(dateStr + 'T00:00:00');
@@ -341,9 +370,16 @@
         const dayCard = document.createElement('div');
         dayCard.className = 'day-card';
         dayCard.setAttribute('data-date', dateStr);
+
+        const isToday = (dateStr === todayStr);
+        if (isToday) {
+          dayCard.classList.add('today-card');
+        }
         
         const formattedDay = d.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' });
-        dayCard.innerHTML = `<div class="day-title">${capitalize(formattedDay)}</div><div class="shifts-list"></div>`;
+        const todayBadgeHtml = isToday ? `<span class="today-badge">Oggi</span>` : '';
+
+        dayCard.innerHTML = `<div class="day-title">${capitalize(formattedDay)}${todayBadgeHtml}</div><div class="shifts-list"></div>`;
 
         const shiftsList = dayCard.querySelector('.shifts-list');
         shiftsForDay.forEach(shift => {
@@ -359,18 +395,18 @@
 
     // SCORRIMENTO AUTOMATICO AL GIORNO DI OGGI
     function scrollToToday(sortedDates) {
-      const todayStr = new Date().toISOString().split('T')[0];
+      const todayStr = getTodayLocalDateStr();
       
-      // Trova oggi o il giorno più vicino dopo oggi
+      // Cerca oggi o il primo giorno successivo disponibile
       let targetDate = sortedDates.find(d => d >= todayStr) || sortedDates[sortedDates.length - 1];
 
       if (targetDate) {
         setTimeout(() => {
           const targetEl = document.querySelector(`.day-card[data-date="${targetDate}"]`);
           if (targetEl) {
-            targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
           }
-        }, 150);
+        }, 200);
       }
     }
 
