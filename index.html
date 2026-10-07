@@ -34,7 +34,6 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* INTESTAZIONE SUPERIORE MODERNA CON TASTI FUNZIONANTI */
     header {
       position: sticky;
       top: 0;
@@ -110,7 +109,6 @@
       transform: scale(0.96);
     }
 
-    /* AGENDA E CARDS GIORNO */
     .agenda-container {
       max-width: 600px;
       margin: 0 auto;
@@ -236,7 +234,6 @@
       line-height: 1;
     }
 
-    /* BARRA RESOCONTO ORIGINALE IN BASSO */
     .summary-bar {
       position: fixed;
       bottom: 0;
@@ -259,7 +256,6 @@
       letter-spacing: 0.5px;
     }
 
-    /* SCHERMATA COMPLETA RESOCONTO / MODALE */
     .modal-overlay, .summary-page {
       position: fixed;
       top: 0;
@@ -329,7 +325,6 @@
       color: var(--text-main);
     }
 
-    /* FORM AGGIUNTA TURNO & FIX INPUT DATA IOS */
     .form-group {
       margin-bottom: 14px;
     }
@@ -421,12 +416,10 @@
 
   <div class="agenda-container" id="agenda"></div>
 
-  <!-- BARRA RESOCONTO IN BASSO -->
   <div class="summary-bar" onclick="openSummary()">
     <span class="summary-bar-title" id="summaryBarTitle">RESOCONTO · CARICAMENTO... ›</span>
   </div>
 
-  <!-- MODALE AGGIUNGI GIORNO (CON TURNI DA 6 ORE CORRETTI) -->
   <div class="modal-overlay" id="modalAdd">
     <div class="modal-header">
       <div class="modal-title">Aggiungi Turno</div>
@@ -485,7 +478,6 @@
     <button class="btn-primary" onclick="saveShiftContinuous(); closeModal();">SALVA E CHIUDI</button>
   </div>
 
-  <!-- SCHERMATA COMPLETA RESOCONTO -->
   <div class="summary-page" id="summaryPage">
     <div class="modal-header">
       <div style="display:flex; align-items:center; gap:10px;">
@@ -697,7 +689,7 @@
 
         const isToday = (dateStr === todayStr);
         if (isToday) { dayCard.classList.add('today-card'); }
-        
+
         const formattedDay = d.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' });
         const todayBadgeHtml = isToday ? `<span class="today-badge">Oggi</span>` : '';
 
@@ -763,14 +755,24 @@
       const row = document.createElement('div');
       row.className = 'shift-row';
 
-      // Conversione automatica dei vecchi turni salvati senza nome
-      let displayShift = shift.shift;
-      if (displayShift === '01:00 - 07:00' || displayShift === '01:00-07:00') displayShift = 'Notte (01:00 - 07:00)';
-      else if (displayShift === '07:00 - 13:00' || displayShift === '07:00-13:00') displayShift = 'Mattina (07:00 - 13:00)';
-      else if (displayShift === '13:00 - 19:00' || displayShift === '13:00-19:00') displayShift = 'Pomeriggio (13:00 - 19:00)';
-      else if (displayShift === '19:00 - 01:00' || displayShift === '19:00-01:00') displayShift = 'Sera (19:00 - 01:00)';
+      let displayShift = shift.shift || '';
+      
+      // CONVERSIONE ESATTA PER I TUOI VECCHI FORMATI
+      const cleanShift = displayShift.trim();
+      
+      if (cleanShift === '19-01' || cleanShift === '19-1' || cleanShift.includes('19-01')) {
+        displayShift = 'Sera (19:00 - 01:00)';
+      } else if (cleanShift === '13-19' || cleanShift.includes('13-19')) {
+        displayShift = 'Pomeriggio (13:00 - 19:00)';
+      } else if (cleanShift === '07-13' || cleanShift === '7-13' || cleanShift.includes('07-13')) {
+        displayShift = 'Mattina (07:00 - 13:00)';
+      } else if (cleanShift === '01-07' || cleanShift === '1-7' || cleanShift.includes('01-07')) {
+        displayShift = 'Notte (01:00 - 07:00)';
+      } else if (cleanShift === 'Riposo') {
+        displayShift = 'Riposo';
+      }
 
-      const color = getShiftColor(shift);
+      const color = getShiftColor({ ...shift, shift: displayShift });
 
       let tagsHtml = '';
       if (shift.cambio) tagsHtml += `<span class="tag tag-cambio">Cambio turno</span>`;
@@ -838,7 +840,8 @@
       let turniTotali = 0, riposi = 0, cambi = 0, cambiPagati = 0, ferie = 0, malattia = 0, permessi = 0, straordinari = 0, doppi = 0, cigo = 0, chiusura = 0;
 
       monthlyShifts.forEach(s => {
-        if (s.shift === 'Riposo') riposi++; else turniTotali++;
+        const shiftVal = (s.shift || '').trim();
+        if (shiftVal === 'Riposo') riposi++; else turniTotali++;
         if (s.cambio) cambi++;
         if (s.cambioPagato) cambiPagati++;
         if (s.ferie) ferie++;
