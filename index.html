@@ -217,7 +217,7 @@
     <button class="btn-back-agenda" onclick="closeSummary()">TORNA ALL'AGENDA</button>
   </div>
 
-  <script>
+<script>
     // Incolla qui le tue chiavi di JSONBin
     const BIN_ID = '6ac51e21ac6210605a19b157';
     const MASTER_KEY = '$2a$10$mdcCYDxaDgUqQi5RhuFhXeoE4LgdhCH5etDoVuJUR7F5033qNa88K';
@@ -314,6 +314,59 @@
       await syncWithCloud();
     }
 
+    // GESTIONE DOPPIA CONFERMA CON ANNULLAMENTO AL TOCCO ESTERNO
+    function handleDeleteClick(btn, id, event) {
+      if (event) event.stopPropagation();
+
+      if (btn.dataset.confirming === 'true') {
+        deleteShift(id);
+      } else {
+        // Ripristina eventuali altri tasti aperti
+        document.querySelectorAll('.btn-delete-shift[data-confirming="true"]').forEach(resetDeleteBtn);
+
+        btn.dataset.confirming = 'true';
+        btn.innerText = 'Elimina?';
+        btn.style.background = 'var(--accent-red)';
+        btn.style.color = '#ffffff';
+        btn.style.padding = '4px 8px';
+        btn.style.borderRadius = '6px';
+        btn.style.fontSize = '12px';
+        btn.style.fontWeight = 'bold';
+
+        // Annullamento automatico dopo 3 secondi
+        const timerId = setTimeout(() => {
+          resetDeleteBtn(btn);
+        }, 3000);
+        btn.dataset.timerId = timerId;
+
+        // Annullamento IMMEDIATO al tocco in un punto qualsiasi fuori dal tasto
+        const cancelOnOutsideClick = (e) => {
+          if (!btn.contains(e.target)) {
+            resetDeleteBtn(btn);
+            document.removeEventListener('click', cancelOnOutsideClick);
+            document.removeEventListener('touchstart', cancelOnOutsideClick);
+          }
+        };
+
+        setTimeout(() => {
+          document.addEventListener('click', cancelOnOutsideClick, { once: true });
+          document.addEventListener('touchstart', cancelOnOutsideClick, { once: true });
+        }, 10);
+      }
+    }
+
+    // Funzione di supporto per ripristinare la X originale
+    function resetDeleteBtn(btn) {
+      if (btn && document.body.contains(btn)) {
+        if (btn.dataset.timerId) clearTimeout(parseInt(btn.dataset.timerId));
+        btn.dataset.confirming = 'false';
+        btn.innerText = '✕';
+        btn.style.background = 'none';
+        btn.style.color = 'var(--text-sub)';
+        btn.style.padding = '0';
+      }
+    }
+
     async function deleteShift(id) {
       shiftsData = shiftsData.filter(s => s.id !== id);
       renderAgenda();
@@ -397,14 +450,11 @@
     function scrollToToday(sortedDates) {
       const todayStr = getTodayLocalDateStr();
       
-      // Cerca oggi o il primo giorno successivo disponibile
       let targetDate = sortedDates.find(d => d >= todayStr) || sortedDates[sortedDates.length - 1];
 
       if (targetDate) {
         const targetEl = document.querySelector(`.day-card[data-date="${targetDate}"]`);
         if (targetEl) {
-          // 'center' allinea la card al centro verticale dello schermo
-          // 'auto' elimina l'animazione di scorrimento
           targetEl.scrollIntoView({ behavior: 'auto', block: 'center' });
         }
       }
@@ -459,7 +509,7 @@
           </div>
           <div class="shift-tags">${tagsHtml}</div>
         </div>
-        <button class="btn-delete-shift" onclick="deleteShift('${shift.id}')">✕</button>
+        <button class="btn-delete-shift" onclick="handleDeleteClick(this, '${shift.id}', event)">✕</button>
       `;
       return row;
     }
