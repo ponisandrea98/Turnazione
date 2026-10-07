@@ -755,24 +755,8 @@
       const row = document.createElement('div');
       row.className = 'shift-row';
 
-      let displayShift = shift.shift || '';
-      
-      // CONVERSIONE ESATTA PER I TUOI VECCHI FORMATI
-      const cleanShift = displayShift.trim();
-      
-      if (cleanShift === '19-01' || cleanShift === '19-1' || cleanShift.includes('19-01')) {
-        displayShift = 'Sera (19:00 - 01:00)';
-      } else if (cleanShift === '13-19' || cleanShift.includes('13-19')) {
-        displayShift = 'Pomeriggio (13:00 - 19:00)';
-      } else if (cleanShift === '07-13' || cleanShift === '7-13' || cleanShift.includes('07-13')) {
-        displayShift = 'Mattina (07:00 - 13:00)';
-      } else if (cleanShift === '01-07' || cleanShift === '1-7' || cleanShift.includes('01-07')) {
-        displayShift = 'Notte (01:00 - 07:00)';
-      } else if (cleanShift === 'Riposo') {
-        displayShift = 'Riposo';
-      }
-
-      const color = getShiftColor({ ...shift, shift: displayShift });
+      const displayShift = shift.shift || '';
+      const color = getShiftColor(shift);
 
       let tagsHtml = '';
       if (shift.cambio) tagsHtml += `<span class="tag tag-cambio">Cambio turno</span>`;
@@ -800,7 +784,8 @@
     }
 
     function getShiftColor(shift) {
-      if (shift.shift === 'Riposo') return 'var(--accent-gray)';
+      const val = shift.shift || '';
+      if (val === 'Riposo') return 'var(--accent-gray)';
       if (shift.ferie || shift.malattia) return 'var(--accent-red)';
       if (shift.cambioPagato) return 'var(--accent-purple-dark)';
       if (shift.cambio) return 'var(--accent-purple)';
